@@ -1,8 +1,8 @@
 'use strict';
 // var lrSnippet = require('grunt-contrib-livereload/lib/utils').livereloadSnippet;
-var mountFolder = function (connect, dir) {
-  return connect.static(require('path').resolve(dir));
-};
+// var mountFolder = function (connect, dir) {
+//   return connect.static(require('path').resolve(dir));
+// };
 
 module.exports = function (grunt) {
   // load all grunt tasks
@@ -15,18 +15,18 @@ module.exports = function (grunt) {
     dist: 'dist'
   };
 
-  var nodevIgnoredFiles = [
-    'README.md',
-    'Gruntfile.js',
-    '/.git/',
-    '/node_modules/',
-    '/app/',
-    '/dist/',
-    '/test/',
-    '/.tmp',
-    '/.sass-cache',
-    '*.txt',
-  ];
+  // var nodevIgnoredFiles = [
+  //   'README.md',
+  //   'Gruntfile.js',
+  //   '/.git/',
+  //   '/node_modules/',
+  //   '/app/',
+  //   '/dist/',
+  //   '/test/',
+  //   '/.tmp',
+  //   '/.sass-cache',
+  //   '*.txt',
+  // ];
 
   try {
     yeomanConfig.app = require('./bower.json').appPath || yeomanConfig.app;
@@ -244,7 +244,7 @@ module.exports = function (grunt) {
         files: [{
           expand: true,
           // cwd: [ '<%= yeoman.app %>/assets/img', '<%= yeoman.app %>/scripts/{,*/}assets/img' ],
-          cwd: [ '<%= yeoman.app %>/assets/img' ],
+          cwd: '<%= yeoman.app %>/assets/img',
           src: '{,*/}*.{png,jpg,jpeg}',
           dest: '<%= yeoman.dist %>/images'
         }]
@@ -283,11 +283,11 @@ module.exports = function (grunt) {
       }
     },
     http: {
-      drop_test: {
+      dropTest: {
         url: 'http://localhost:7475/db/data/cypher',
         method: 'post',
         json: {
-          query:"START n=node(*) MATCH n-[r?]-() WHERE ID(n) <> 0 DELETE n,r"
+          query:'START n=node(*) MATCH n-[r?]-() WHERE ID(n) <> 0 DELETE n,r'
         }
       }
     },
@@ -390,7 +390,7 @@ module.exports = function (grunt) {
         'jshint',
         'coffee',
         'compass:dist',
-        'imagemin',
+        // 'imagemin',
         // 'svgmin',
         'htmlmin'
       ]
@@ -414,9 +414,9 @@ module.exports = function (grunt) {
   grunt.registerTask('test', [
     'env:test',
     'clean:server',
-    // 'coffee',
-    // 'compass',
-    // 'html2js',
+    'coffee',
+    'compass',
+    'html2js',
     // 'connect:test',
     'mochaTest',
     'karma:unit'
@@ -424,7 +424,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('test:e2e', [
     'env:test',
-    'http:drop_test',
+    'http:dropTest',
     'concurrent:server',
     'nodev:dev'
   ]);
