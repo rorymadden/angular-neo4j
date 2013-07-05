@@ -93,7 +93,7 @@ describe('account registration tests', function(){
     $scope.user = { email: 'testuser@test.com'};
     $scope.resendActivation();
     $httpBackend.flush();
-    // $rootScope.$broadcast('$routeChangeSuccess', {});
+    $rootScope.$broadcast('$routeChangeSuccess', {});
 
     // test api called
     $httpBackend.expectPOST('/api/user/resendActivation').respond(200, '');
