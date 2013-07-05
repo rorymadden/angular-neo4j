@@ -3,23 +3,23 @@
 Sample single page web app application (AngularJS front end, node.js server and Neo4j database) with authentication functionality:
 
 1. Register a new user
-    a. Registration
-    b. Emailed activation code
-    c. Re-send activation code
-    d. Activation handling
-    e. Forgot Password - email link
-    f. Reset Password
+    2. Registration
+    3. Emailed activation code
+    4. Re-send activation code
+    5. Activation handling
+    6. Forgot Password - email link
+    7. Reset Password
 2. Login functionality
-    a. Username and password
-    b. Facebook
-    c. Google
-    d. Persistent login (remember me)
+    3. Username and password
+    4. Facebook
+    5. Google
+    6. Persistent login (remember me)
 3. Account pages
-    a. View / Update profile
-    b. Update Password
-    c. View login cookies (if logged in from multiple computers)
-    d. Remove login cookies
-    e. View linked social media accounts
+    4. View / Update profile
+    5. Update Password
+    6. View login cookies (if logged in from multiple computers)
+    7. Remove login cookies
+    8. View linked social media accounts
 
 ## Getting Started
 
@@ -39,8 +39,9 @@ The last step with the two neo4j instances is to setup the node_auto_indexes (Th
 Navigate to (neo4j installation directory)/conf/neo4j.properties
 Ensure that the following lines are uncommented and mirror the following:
 
-node_auto_indexing=true
-node_keys_indexable=email,autoIndexSeries,passwordResetKey,activationKey,id
+`node_auto_indexing=true`
+
+`node_keys_indexable=email,autoIndexSeries,passwordResetKey,activationKey,id`
 
 Start your two neo4j instances
 
