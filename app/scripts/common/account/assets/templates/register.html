@@ -1,0 +1,101 @@
+<div class="row">
+  <div class="span8" data-ng-include data-src="'views/partials/benefits.html'"></div>
+  <div class="span4">
+    <form class="well form-horizontal" id="register" name="form">
+      <div data-ng-hide="authSuccess">
+        <h2>Register</h2>
+        <input id="csrf" type='hidden' name='_csrf' ng-model='form._csrf' value="token" mp-value-copy>
+        <div class="clear-fix">
+          <p>Register with</p>
+          <a class="btn" href="/auth/facebook"><img src='images/facebook.png'>
+            &nbsp; Facebook &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</a>
+          <a class="btn" href="/auth/google"><img src='images/google.png'>
+            &nbsp; Google &nbsp; &nbsp; &nbsp; &nbsp;</a>
+        <div class="or">
+          <p>---------------- OR ----------------</p>
+
+        <div class="alert alert-error" ng-show="authError">
+          <div ng-bind-html-unsafe="authError"></div>
+
+        </div>
+        <div class="control-group">
+          <label class="control-label" for='first'>First Name</label>
+          <div class="controls">
+            <input class="span2" ng-model='form.first' type='text' required>
+          </div>
+        </div>
+        
+        <div class="control-group">
+          <label class="control-label" for='name'>Last Name</label>
+          <div class="controls">
+            <input class="span2" ng-model='form.last' type='text' required>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for='email'>Email</label>
+          <div class="controls">
+            <input class="span2" ng-model='form.email' type='email' required>
+            <span class="help-block" ng-show="form.$error.email[0].$invalid && form.$error.email[0].$dirty">Please enter a valid email.</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for='password'>Password</label>
+          <div class="controls">
+            <input class="span2" ng-model='form.password' type='password' ng-minlength="6" required>
+            <span class="help-block" ng-show="form.$error.minlength[0].$invalid">Password must be a minimum of 6 characters</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for='gender'>Gender</label>
+          <div class="controls">
+            <select class="span2" ng-model='form.gender' required>
+              <option value="">Please Select</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+            </select>
+            <span class="help-block" ng-show="form.gender.$error.required && form.gender.$dirty">Please select a gender.</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for='dob'>Date of Birth</label>
+          <div class="controls">
+            <input class="span2" type='text' placeholder='dd/mm/yy' ng-model='form.dob' required>
+            <span class="help-block" ng-show="form.dob.$error.required && form.dob.$dirty">Please enter your date fo birth.</span>
+          </div>
+        </div>
+
+        <!-- <div class="control-group">
+          <div class="controls"> -->
+        <!-- </div> -->
+
+        <!-- .modal.hide.fade#myModal(role="dialog" aria-labelledby="myModalLabel" aria-hidden="true")
+          .modal-header
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true">&times;
+            h3 Need a header
+          .modal-body
+              <p>Stuff
+          .modal-footer
+            <a class="btn(href="#" data-dismiss="modal" aria-hidden="true">Close
+            //- <a class="btn.btn-primary(href="#">Save changes -->
+
+        <div>
+          <input class="check_boxes" id="tandc" ng-model='form.tandc' type="checkbox" name="tandc" ng-true-value="agreed" required> I agree to <a href="modals/terms" data-target="#myModal" data-toggle="modal">Terms of Use</a> and <a href='modals/privacy' data-target="#myModal" data-toggle="modal">Privacy Policy</a>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" ng-click='registerUser()'>Sign up</button>
+          or
+          <a class="show-login" href="/login">login</a>
+        </div>
+      </div>
+
+      <div data-ng-show="authSuccess">
+        <h2>Registration Successful</h2>
+        <p>{{authSuccess}}</p>
+      </div>
+    </form>
+  </div>
+</div>

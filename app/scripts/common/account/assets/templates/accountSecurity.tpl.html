@@ -1,0 +1,39 @@
+<h1>{{account.first}} {{account.last}}</h1>
+
+<div class="row">
+  <div class="span3" data-ng-include data-src="'scripts/common/account/assets/templates/accountMenu.tpl.html'"></div>
+  <div class="span9">
+    <!-- <div class="alert alert-error" ng-show="authError" ng-bind-html-unsafe="authError"></div> -->
+    <!-- TODO - change to ng-if -->
+    <div ng-show="cookies.length">
+      <h3>Logged In</h3>
+      <table class="table table-hover table-striped">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Country</th>
+            <th>City</th>
+            <th>Browser</th>
+            <th>OS</th>
+            <th>Date</th>
+            <th>Remove</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="cookie in cookies | orderBy:'cookie.token.created'">
+            <td>{{$index + 1}}</td>
+            <td>{{cookie.token.country}}</td>
+            <td>{{cookie.token.city}}</td>
+            <td>{{cookie.token.browser}}</td>
+            <td>{{cookie.token.os}}</td>
+            <td>{{cookie.token.created | date:'dd MMMM yyyy hh:mm a'}}</td>
+            <td><button class="btn" type="remove" ng-click="removeToken(cookie.token.autoIndexSeries, cookie.token.token)"><i class="icon-remove-sign"></i></button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div ng-hide="cookies.length">
+      <p>There are no cookies in use</p>
+    </div>
+  </div>
+</div>

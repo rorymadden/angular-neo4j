@@ -1,0 +1,8 @@
+node_modules
+dist
+.tmp
+.sass-cache
+app/components
+server/config/config.js
+dump.rdb
+.DS_Store

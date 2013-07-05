@@ -1,0 +1,31 @@
+<div class="row">
+  <div class="span8" data-ng-include data-src="'views/partials/benefits.html'"></div>
+  <div class="span4">
+    <form class="well" data-ng-controller="RegisterCtrl" name="form">
+      <div data-ng-hide="authSuccess">
+        <input id="csrf" type='hidden' name='_csrf' ng-model='form._csrf' value="token" mp-value-copy>
+        <h2>Resend Activation</h2>
+
+        <div class="alert alert-error" ng-show="authError" ng-bind-html-unsafe="authError"></div>
+
+         <div class="control-group">
+          <label class="control-label" for='email'>Email</label>
+          <div class="controls">
+            <input id="email" class="span3" type='email'
+              name='email' data-ng-model="form.email" required>
+            <span class="help-block" ng-show="form.$error.email[0].$invalid && form.$error.email[0].$dirty">Please enter a valid email.</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" ng-disabled='form.$invalid' ng-click='resendActivation()'>Send Reset Link</button>
+        or
+        <a class="show-signup" href="/">cancel</a>
+      </div>
+
+      <div data-ng-show="authSuccess">
+        <h2>Activation Link Sent</h2>
+        <p>{{authSuccess}}</p>
+      </div>
+    </form>
+  </div>
+</div>
