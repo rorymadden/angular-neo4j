@@ -2,7 +2,7 @@ node_modules
 dist
 .tmp
 .sass-cache
-app/components
+app/bower_components
 server/config/config.js
 dump.rdb
 .DS_Store

@@ -1,3 +1,4 @@
+'use strict';
 
 var express = require('express');
 var http = require('http');
@@ -23,7 +24,10 @@ var app = module.exports = app;
 app.configure(function() {
   app.set('port', config.node.port);
   app.use(express.favicon());
-  app.use(express.logger('dev'));
+
+  if (app.get('env') === 'development') {
+    app.use(express.logger('dev'));
+  }
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(expressValidator);
@@ -47,7 +51,7 @@ app.configure(function() {
 
   //csrf protection
   // add a check for the csrf token in the req.headers['x-xsrf-token'] - angular places it here
-  // all other checks are teh default express behaviour
+  // all other checks are the default express behaviour
   if(env !== 'test') {
     var csrfValue = function(req) {
       var token = (req.body && req.body._csrf)
@@ -72,25 +76,41 @@ app.configure(function() {
   // TODO: investigate varnish / nginx for caching
   // app.use(express.staticCache());
 
-  app.use(express.static(__dirname + '/../app', {maxAge: 86400000}));
+
+  // host dev files if in dev mode
+  if (app.get('env') === 'development') {
+    app.use(express.static(__dirname + '/../.tmp'));
+    app.use(express.static(__dirname + '/../app'));
+  } else {
+    app.use(express.static(__dirname + '/../dist'));
+  }
+
   app.use(app.router);
-  // app.use(function(req, res) {
-  //   res.status(404);
 
-  //   // Respond with html page:
-  //   if (req.accepts('html')) {
-  //     res.render('404', { url: req.url });
-  //     return;
-  //   }
-  //   // Respond with JSON:
-  //   if (req.accepts('json')) {
-  //     res.send({ error: 'Not found'});
-  //     return;
-  //   }
+  // Since this is the last non-error-handling
+  // middleware use()d, we assume 404, as nothing else
+  // responded.
 
-  //   // Default to plain text:
-  //   res.type('txt').send('Not found');
-  // })
+  // $ curl http://localhost:3000/notfound
+  // $ curl http://localhost:3000/notfound -H "Accept: application/json"
+  // $ curl http://localhost:3000/notfound -H "Accept: text/plain"
+  app.use(function(req, res, next) {
+    res.status(404);
+
+    // Respond with html page:
+    if (req.accepts('html')) {
+      res.render('404', { url: req.url });
+      return;
+    }
+    // Respond with JSON:
+    if (req.accepts('json')) {
+      res.send({ error: 'Not found'});
+      return;
+    }
+
+    // Default to plain text:
+    res.type('txt').send('Not found');
+  });
 });
 
 

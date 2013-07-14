@@ -371,9 +371,6 @@ exports.register = function(req, res) {
   req.assert('email', errorMessages.invalidEmail).isEmail();
   req.assert('password', errorMessages.invalidPassword).len(6, 128);
   req.assert('gender', errorMessages.invalidGender).notEmpty();
-  // req.assert('birthday_dateLists_day_list', errorMessages.invalidBirthday).notEmpty();
-  // req.assert('birthday_dateLists_month_list', errorMessages.invalidBirthday).notEmpty();
-  // req.assert('birthday_dateLists_year_list', errorMessages.invalidBirthday).notEmpty();
   var errors = req.validationErrors();
   if(errors){
     return res.json(412,  errors );
@@ -381,15 +378,9 @@ exports.register = function(req, res) {
   else {
     User.findByEmail(req.body.email, function(err, user){
       if(user && user.active){
-        // req.session.formData = req.body;
-        // req.session.error = errorMessages.userRegisteredAndActive;
-        // return res.redirect(routes.home.url);
         return res.json(412,  errorMessages.userRegisteredAndActive );
       }
       if(user && !user.active){
-        // req.session.formData = req.body;
-        // req.session.error = errorMessages.userRegisteredNotActive;
-        // return res.redirect(routes.home.url);
         return res.json(412,  errorMessages.userRegisteredNotActive );
       }
       else {
