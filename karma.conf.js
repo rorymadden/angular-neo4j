@@ -7,16 +7,18 @@ basePath = '';
 files = [
   JASMINE,
   JASMINE_ADAPTER,
-  'app/components/jquery/jquery.js',
-  'app/components/angular/angular.js',
-  'app/components/angular-bootstrap/ui-bootstrap.js',
-  'app/components/angular-sanitize/angular-sanitize.js',
-  'app/components/angular-mocks/angular-mocks.js',
-  'app/scripts/*.js',
-  'app/scripts/**/*.js',
+  'src/bower_components/jquery/jquery.js',
+  'src/bower_components/angular/angular.js',
+  'src/bower_components/angular-bootstrap/ui-bootstrap.js',
+  'src/bower_components/angular-sanitize/angular-sanitize.js',
+  'src/bower_components/angular-mocks/angular-mocks.js',
+  'src/bower_components/ui-router/build/angular-ui-router.min.js',
+  'src/bower_components/angular-date-dropdowns/directive.js',
+  'src/scripts/*.js',
+  'src/scripts/**/*.js',
   // 'test/mock/**/*.js',
   // 'test/spec/**/*.js',
-  'dist/templates/**/*.js'
+  // 'dist/scripts/templates.js'
 ];
 
 // list of files to exclude
@@ -24,7 +26,7 @@ exclude = [];
 
 // test results reporter to use
 // possible values: dots || progress || growl
-reporters = ['progress'];
+reporters = ['dots'];
 
 // web server port
 port = 8080;
@@ -53,7 +55,7 @@ autoWatch = false;
 browsers = ['Chrome'];
 
 // If browser does not capture in given timeout [ms], kill it
-captureTimeout = 5000;
+captureTimeout = 2000;
 
 // Continuous Integration mode
 // if true, it capture browsers, run tests and exit

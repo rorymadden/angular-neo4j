@@ -1,22 +1,22 @@
 {
+  "curly": false,
   "node": true,
   "browser": true,
-  "es5": true,
   "esnext": true,
   "bitwise": true,
-  "camelcase": true,
-  "curly": true,
+  "camelcase": false,
   "eqeqeq": true,
   "immed": true,
   "indent": 2,
   "latedef": true,
   "newcap": true,
   "noarg": true,
-  "quotmark": "single",
+  "quotmark": "true",
   "regexp": true,
   "undef": true,
   "unused": true,
   "strict": true,
+  "laxcomma": true,
   "trailing": true,
   "smarttabs": true,
   "globals": {
@@ -29,6 +29,7 @@
     "afterEach": false,
     "expect": false,
     "inject": false,
-    "spyOn": false
+    "spyOn": false,
+    "jasmine": false
   }
 }

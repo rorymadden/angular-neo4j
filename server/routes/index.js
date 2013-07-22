@@ -7,12 +7,6 @@ var authService = require('../controllers/authService')
   , config = require('../config/config')[env]
   , path = require('path');
 
-
-// Force all matching html5 routes through index.html:
-function html5Route(req, res, next) {
-  res.sendfile(__dirname + '/../../app/index.html');
-}
-
 /**
  * Boot for application routes
  * @param  {Object} app      The express server application
@@ -52,18 +46,9 @@ module.exports = function(app, passport) {
   //user login routes
   app.post('/api/user/login', function(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
-      if(err) return res.json(500, err);
+      if(err) return res.json(400, err);
       if(!user && info) return res.json(412, info);
 
-      // var error = err || info;
-      // if (err) {
-      //   if (typeof(error.message) !== 'undefined') {
-      //     var text = error.message;
-      //     error = text;
-      //   }
-      //   // req.session.error = error;
-      //   return res.send(412, error);
-      // }
       req.newUser = user;
       return next();
     })(req, res, next);
@@ -78,10 +63,10 @@ module.exports = function(app, passport) {
   app.all('/api/account/*', authService.isLoggedIn);
   app.put('/api/account', authService.isLoggedIn, userService.editAccount);
   app.put('/api/account/editPassword', userService.changePassword);
-  app.get('/api/account/linkedAccounts', authService.getLinkedAccounts);
-  app.delete('/api/account/linkedAccounts/:id', authService.removeLinkedAccount);
+  app.get('/api/account/linkedAccounts', userService.getLinkedAccounts);
+  app.delete('/api/account/linkedAccounts/:id', userService.removeLinkedAccount);
   app.get('/api/account/security', userService.getLoginTokens);
-  app.delete('/api/account/security/:autoIndexSeries/:token', userService.removeLoginToken);
+  app.delete('/api/account/security/:id', userService.removeLoginToken);
   app.get('/api/account/deactivate', userService.deactivateAccount);
 
   /*
@@ -96,7 +81,6 @@ module.exports = function(app, passport) {
 
   // // redirect all others to the index (HTML5 history)
   app.get('*', function(req, res){
-    // console.log('folder: ' + config.node.distFolder)
     res.sendfile('index.html', { root: config.node.distFolder });
   });
 

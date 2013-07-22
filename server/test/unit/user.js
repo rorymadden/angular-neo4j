@@ -45,7 +45,7 @@ describe('routes_user:', function () {
     };
 
     // Drop the database.
-    var query = 'start n=node(*) match n-[r?]->() delete r where id(n) <> 0 delete n';
+    var query = 'start n=node(*) match n-[r?]->() where id(n) <> 0 delete r,n';
     var params = {};
 
     neoprene.query(query, params, function(err, results) {
@@ -74,7 +74,7 @@ describe('routes_user:', function () {
           .post('/api/user/register')
           .send(fakeUser)
           .end(function(err, res){
-            User.findByEmail(fakeUser.email, function(err, user) {
+            User.findOne({email: fakeUser.email.toLowerCase() }, function(err, user) {
               user.first.should.equal(fakeUser.first);
               done();
             });
@@ -86,7 +86,7 @@ describe('routes_user:', function () {
           .post('/api/user/register')
           .send(fakeUser)
           .end(function(err, res){
-            User.findByEmail(fakeUser.email, function(err, user) {
+            User.findOne({email: fakeUser.email.toLowerCase() }, function(err, user) {
               should.not.exist(user);
               done();
             });
@@ -161,14 +161,14 @@ describe('routes_user:', function () {
         .post('/api/user/register')
         .send(fakeUser)
         .end(function(err, res){
-          User.findByEmail(fakeUser.email, function(err, user){
+          User.findOne({email: fakeUser.email.toLowerCase() }, function(err, user){
             registeredUser = user;
             done();
           });
         });
     });
     it('should allow a second registration', function (done) {
-      neoprene.getIndexedNodes('node_auto_index', 'email', fakeUser.email.toLowerCase().trim(), function(err, users) {
+      User.find({email: fakeUser.email.toLowerCase().trim() }, function(err, users) {
         users.length.should.equal(1);
         request
           .post('/api/user/register')
@@ -176,9 +176,9 @@ describe('routes_user:', function () {
           .end(function(err, res){
             should.not.exist(err);
             res.should.have.status(200);
-            User.findByEmail(fakeUser.email, function(err, user1) {
+            User.findOne({email: fakeUser.email.toLowerCase() }, function(err, user1) {
               user1.first.should.equal(fakeUser.first);
-              User.findByEmail(secondUser.email, function(err, user2) {
+              User.findOne({email: secondUser.email.toLowerCase()}, function(err, user2) {
                 user2.first.should.equal(secondUser.first);
                 done();
               });
@@ -204,7 +204,7 @@ describe('routes_user:', function () {
         .end(function(err, res){
           should.not.exist(err);
           res.should.have.status(200);
-          User.findByEmail(fakeUser.email, function(err, user){
+          User.findOne({email: fakeUser.email.toLowerCase() }, function(err, user){
             user.active.should.be.ok;
             user.activationKeyUsed.should.be.ok;
             done();
@@ -218,7 +218,7 @@ describe('routes_user:', function () {
         .end(function(err, res){
           should.not.exist(err);
           res.should.have.status(412);
-          User.findByEmail(fakeUser.email, function(err, user){
+          User.findOne({email: fakeUser.email.toLowerCase() }, function(err, user){
             user.active.should.not.be.ok;
             user.activationKeyUsed.should.not.be.ok;
             done();
@@ -263,7 +263,7 @@ describe('routes_user:', function () {
         .post('/api/user/register')
         .send(fakeUser)
         .end(function(err, res){
-          neoprene.getIndexedNodes('node_auto_index', 'email', fakeUser.email.toLowerCase().trim(), function(err, users) {
+          User.find({email: fakeUser.email.toLowerCase().trim() }, function(err, users) {
             users.length.should.equal(1);
             done();
           });
@@ -281,7 +281,7 @@ describe('routes_user:', function () {
           .post('/api/user/activate/')
           .send({activationKey: registeredUser.activationKey})
           .end(function(err, res){
-            User.findByEmail(fakeUser.email, function(err, user){
+            User.findOne({email: fakeUser.email.toLowerCase() }, function(err, user){
               activatedUser = user;
               done();
             });
@@ -348,8 +348,10 @@ describe('routes_user:', function () {
               .end(function(err, res){
                 should.not.exist(err);
                 res.should.have.status(200);
-                // TODO: need to verify that the cookie does not contain logintoken
-                res.headers['set-cookie'][1].indexOf('logintoken').should.equal(-1);
+                var len = res.headers['set-cookie'].length;
+                for(var i=0;i<len; i++){
+                  res.headers['set-cookie'][i].indexOf('logintoken').should.equal(-1);
+                }
                 done();
             })
         });
@@ -362,16 +364,21 @@ describe('routes_user:', function () {
               .send({email: fakeUser.email, password: fakeUser.password, remember_me: true})
               .end(function(err, res){
                 should.not.exist(err);
-                // console.log('response :' + JSON.stringify(res.body));
                 res.should.have.status(200);
                 // need to verify that the cookie does contain logintoken
-                res.headers['set-cookie'][1].indexOf('logintoken').should.not.equal(-1);
+                var len = res.headers['set-cookie'].length;
+                var exists = false;
+                for(var i=0;i<len; i++){
+                  if(res.headers['set-cookie'][i].indexOf('logintoken') !== -1) exists = true;
+                }
+                exists.should.be.true;
                 request
                   .post('/api/user/logout')
                   .end(function(err, res){
-                    // TODO: check that the cookie has been removed.
-                    res.headers['set-cookie'][1].indexOf('logintoken').should.equal(-1);
-                    // console.log('headers '+JSON.stringify(res.headers));
+                    len = res.headers['set-cookie'].length;
+                    for(var i=0;i<len; i++){
+                      res.headers['set-cookie'][i].indexOf('logintoken').should.equal(-1);
+                    }
                     done();
                   });
             });
@@ -424,7 +431,7 @@ describe('routes_user:', function () {
               .post('/api/user/forgotPassword')
               .send(fakeUser)
               .end(function(err, res){
-                User.findByEmail(fakeUser.email, function (err, user) {
+                User.findOne({email: fakeUser.email.toLowerCase() }, function (err, user) {
                   token = user.passwordResetKey;
                   done();
                 });
@@ -433,12 +440,12 @@ describe('routes_user:', function () {
           // it('should work if link clicked within time limit', function (done){
           //   request
           //     .post('/api/user/resetPassword')
-          //     .send({ user_id: activatedUser.id, passwordResetKey: token })
+          //     .send({ user_id: activatedUser._id, passwordResetKey: token })
           //     .expect(200, done);
           // });
           it('should error if password missing', function (done){
             var passwordDetails = {
-              user_id: activatedUser.id,
+              user_id: activatedUser._id,
               passwordResetKey: token,
               password: '',
               passwordConfirm: newPassword
@@ -449,7 +456,7 @@ describe('routes_user:', function () {
               .end(function(err, res){
                 should.not.exist(err);
                 res.should.have.status(412);
-                User.findByEmail(activatedUser.email ,function(err, user){
+                User.findOne({email: activatedUser.email.toLowerCase() } ,function(err, user){
                   user.checkPassword(newPassword, function(err, isMatch){
                     isMatch.should.not.be.ok;
                     done();
@@ -459,7 +466,7 @@ describe('routes_user:', function () {
           });
           it('should error if password confirm missing', function (done){
             var passwordDetails = {
-              user_id: activatedUser.id,
+              user_id: activatedUser._id,
               passwordResetKey: token,
               password: newPassword,
               passwordConfirm: ''
@@ -470,7 +477,7 @@ describe('routes_user:', function () {
               .end(function(err, res){
                 should.not.exist(err);
                 res.should.have.status(412);
-                User.findByEmail(activatedUser.email ,function(err, user){
+                User.findOne({email: activatedUser.email.toLowerCase() } ,function(err, user){
                   user.checkPassword(newPassword, function(err, isMatch){
                     isMatch.should.not.be.ok;
                     done();
@@ -480,7 +487,7 @@ describe('routes_user:', function () {
           });
           it('should pass if the passwords match', function (done){
             var passwordDetails = {
-              user_id: activatedUser.id,
+              user_id: activatedUser._id,
               passwordResetKey: token,
               password: newPassword,
               passwordConfirm: newPassword
@@ -491,7 +498,7 @@ describe('routes_user:', function () {
               .end(function(err, res){
                 should.not.exist(err);
                 res.should.have.status(200);
-                User.findByEmail(activatedUser.email ,function(err, user){
+                User.findOne({email: activatedUser.email.toLowerCase() } ,function(err, user){
                   user.checkPassword(newPassword, function(err, isMatch){
                     isMatch.should.be.ok;
                     done();
@@ -501,7 +508,7 @@ describe('routes_user:', function () {
           });
           it('should fail if the passwords do not match', function (done){
             var passwordDetails = {
-              user_id: activatedUser.id,
+              user_id: activatedUser._id,
               passwordResetKey: token,
               password: newPassword,
               passwordConfirm: 'bad password'
@@ -512,7 +519,7 @@ describe('routes_user:', function () {
               .end(function(err, res){
                 should.not.exist(err);
                 res.should.have.status(412);
-                User.findByEmail(activatedUser.email ,function(err, user){
+                User.findOne({email: activatedUser.email.toLowerCase() } ,function(err, user){
                   user.checkPassword(newPassword, function(err, isMatch){
                     isMatch.should.not.be.ok;
                     done();
@@ -523,14 +530,14 @@ describe('routes_user:', function () {
           it('should pass if link clicked within time limit (30 mins)',
             function (done){
             var passwordDetails = {
-              user_id: activatedUser.id,
+              user_id: activatedUser._id,
               passwordResetKey: token,
               password: newPassword,
               passwordConfirm: newPassword
             };
             var oldDate = new Date();
             oldDate.setHours(oldDate.getHours() - 1);
-            User.findByEmail(fakeUser.email, function(err, user) {
+            User.findOne({email: fakeUser.email.toLowerCase() }, function(err, user) {
               user.passwordResetDate = oldDate;
               user.save(function (err, user){
                 request
@@ -547,14 +554,14 @@ describe('routes_user:', function () {
           it('should fail if link not clicked within time limit',
             function (done){
             var passwordDetails = {
-              user_id: activatedUser.id,
+              user_id: activatedUser._id,
               passwordResetKey: token,
               password: newPassword,
               passwordConfirm: newPassword
             };
             var oldDate = new Date();
             oldDate.setHours(oldDate.getHours()-2);
-            User.findByEmail(fakeUser.email, function (err, user) {
+            User.findOne({email: fakeUser.email.toLowerCase() }, function (err, user) {
               user.passwordResetDate = oldDate;
               user.save(function (err, user) {
                 request

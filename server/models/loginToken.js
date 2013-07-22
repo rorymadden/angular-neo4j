@@ -12,8 +12,8 @@ var neo4jURI = 'http://' + config.neo4j.user + ':' +
 neoprene.connect(neo4jURI);
 
 var LoginTokenSchema = new Schema({
-    autoIndexSeries: {type: String }
-  , token: {type: String }
+    autoIndexSeries: {type: String, index: true}
+  , token: {type: String, index: true }
   , ip: { type: String }
   , country: { type: String }
   , city: { type: String }
@@ -45,61 +45,18 @@ LoginTokenSchema.methods.getCookieValue = function(){
       { autoIndexSeries: this.autoIndexSeries, token: this.token});
 };
 
-LoginTokenSchema.statics.getTokens = function(email, callback) {
-  if (!email) {
-    return callback(errorMessages.invalidEmail, null);
-  }
-  else {
-    var query = [
-      'START user=node:node_auto_index(email = {email})',
-      'MATCH token-[:AUTHORISES]->user',
-      'RETURN token'
-    ].join('\n');
-
-    var params = {
-      email: email
-    };
-
-    neoprene.query(query, params, function(err, results) {
-      if (err) return callback(err);
-      return callback(err, results);
-    });
-  }
-};
-
-LoginTokenSchema.statics.getToken = function(cookie, callback) {
-  if (!cookie.token || !cookie.autoIndexSeries) {
-    return callback(errorMessages.tokenError, null);
-  }
-  else {
-    var query = [
-      'START token=node:node_auto_index(autoIndexSeries= {autoIndexSeries})',
-      'MATCH token-[:AUTHORISES]->user',
-      'WHERE token.token = {token}',
-      'RETURN user, token'
-    ].join('\n');
-
-    var params = {
-      autoIndexSeries: cookie.autoIndexSeries,
-      token: cookie.token
-    };
-
-    neoprene.query(query, params, function(err, results) {
-      if (err) return callback(err);
-      if(results[0]) return callback(err, results[0]['user'], results[0]['token']);
-    });
-  }
-};
-
+// remove a series if one of the items has become compromised
 LoginTokenSchema.statics.removeTokenSeries = function(autoIndexSeries, callback) {
   if (!autoIndexSeries) {
     return callback(errorMessages.tokenError, null);
   }
   else {
-    var query = [
-      'START token=node:node_auto_index(autoIndexSeries={autoIndexSeries})',
-      'DELETE token'
-    ].join('\n');
+    // var query = [
+    //   'START token=node:node_auto_index(autoIndexSeries={autoIndexSeries})',
+    //   'MATCH token-[r]->()',
+    //   'DELETE r, token'
+    // ].join('\n');
+    var query = 'MATCH (n:LoginToken)-[r]-() WHERE n.autoIndexSeries = { autoIndexSeries } DELETE r, n';
 
     var params = {
       autoIndexSeries: autoIndexSeries
@@ -112,30 +69,8 @@ LoginTokenSchema.statics.removeTokenSeries = function(autoIndexSeries, callback)
   }
 };
 
+// load the relationship used for this model
+neoprene.model('relationship', 'AUTHORISES', new Schema());
 
-LoginTokenSchema.statics.removeToken = function(loginToken, callback){
-  if(!loginToken.autoIndexSeries || !loginToken.token){
-    return callback(errorMessages.tokenError)
-  }
-  else {
-    var query = [
-      'START tokens=node:node_auto_index(autoIndexSeries={autoIndexSeries})',
-      'MATCH tokens-[r]->()',
-      'WHERE tokens.token = {token}',
-      'DELETE tokens, r'
-    ].join('\n');
-
-    var params = {
-      autoIndexSeries: loginToken.autoIndexSeries,
-      token: loginToken.token
-    };
-
-
-    neoprene.query(query, params, function(err, results) {
-      if (err) return callback(err);
-      return callback(null);
-    });
-  }
-};
 module.exports = neoprene.model('node', 'LoginToken', LoginTokenSchema);
 

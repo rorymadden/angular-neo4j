@@ -18,7 +18,6 @@ var app = require('../../index')
   , agent2 = superagent.agent()
   , agent3 = superagent.agent()
   , fakeUser
-  , activatedUser
   ;
 
 var env = process.env.NODE_ENV || 'development';
@@ -57,16 +56,15 @@ describe('account pages:', function () {
         .post('/api/user/register')
         .send(fakeUser)
         .end(function(err, res){
-          User.findByEmail(fakeUser.email, function(err, user){
+          User.findOne({email: fakeUser.email.toLowerCase()}, function(err, user){
             request
               .post('/api/user/activate/')
               .send({activationKey: user.activationKey})
               .end(function(err, res){
                 agent.saveCookies(res);
-                User.findByEmail(fakeUser.email, function(err, user){
+                User.findOne({email: fakeUser.email.toLowerCase()}, function(err, user){
                   user.active.should.be.ok;
                   user.activationKeyUsed.should.be.ok;
-                  activatedUser = user;
                   done();
                 });
               });
@@ -80,10 +78,9 @@ describe('account pages:', function () {
       .get('/api/user/current-user')
       .agent(agent)
       .end(function(err, res){
-        // console.log('user ' + JSON.stringify(res.body));
-        should.exist(res.body.user);
-        res.body.user.first.should.equal(fakeUser.first);
-        res.body.user.email.should.equal(fakeUser.email.toLowerCase());
+        should.exist(res.body);
+        res.body.first.should.equal(fakeUser.first);
+        res.body.email.should.equal(fakeUser.email.toLowerCase());
         done();
       });
   });
@@ -95,10 +92,10 @@ describe('account pages:', function () {
       .agent(agent)
       .send({first: 'New', last: 'Name', email: 'NewName@test.com', gender: 'male', password:'TestPassword'})
       .end(function(err, res){
-        User.findByEmail(fakeUser.email, function(err, user){
+        User.findOne({email: fakeUser.email.toLowerCase()}, function(err, user){
           should.not.exist(err);
           should.not.exist(user);
-          User.findByEmail('NewName@test.com', function(err, user){
+          User.findOne({email: 'newname@test.com'}, function(err, user){
             user.first.should.not.equal(fakeUser.first);
             user.first.should.equal('New');
             user.last.should.equal('Name');
@@ -152,7 +149,7 @@ describe('account pages:', function () {
       .agent(agent)
       .send({currentPassword: fakeUser.password, newPassword: 'Testing', passwordConfirm: 'Testing'})
       .end(function(err, res){
-        User.findByEmail(fakeUser.email, function(err, user){
+        User.findOne({email: fakeUser.email.toLowerCase()}, function(err, user){
           user.checkPassword('Testing', function(err, isMatch){
             isMatch.should.be.ok;
             done();
@@ -167,7 +164,7 @@ describe('account pages:', function () {
       .agent(agent)
       .send({currentPassword: fakeUser.password, newPassword: 'Testing', passwordConfirm: 'TEsting'})
       .end(function(err, res){
-        User.findByEmail(fakeUser.email, function(err, user){
+        User.findOne({email: fakeUser.email.toLowerCase()}, function(err, user){
           user.checkPassword(fakeUser.password, function(err, isMatch){
             isMatch.should.be.ok;
             done();
@@ -182,7 +179,7 @@ describe('account pages:', function () {
       .agent(agent)
       .send({currentPassword: fakeUser.password, newPassword: 'Test', passwordConfirm: 'Test'})
       .end(function(err, res){
-        User.findByEmail(fakeUser.email, function(err, user){
+        User.findOne({email: fakeUser.email.toLowerCase()}, function(err, user){
           user.checkPassword(fakeUser.password, function(err, isMatch){
             isMatch.should.be.ok;
             done();
@@ -197,7 +194,7 @@ describe('account pages:', function () {
       .agent(agent)
       .send({currentPassword: '', newPassword: 'Test', passwordConfirm: 'Test'})
       .end(function(err, res){
-        User.findByEmail(fakeUser.email, function(err, user){
+        User.findOne({email: fakeUser.email.toLowerCase()}, function(err, user){
           user.checkPassword(fakeUser.password, function(err, isMatch){
             isMatch.should.be.ok;
             done();
@@ -215,7 +212,7 @@ describe('account pages:', function () {
           request
             .post('/api/user/login')
             .agent(agent2)
-            .send({email: fakeUser.email, password: fakeUser.password, remember_me: true})
+            .send({email: fakeUser.email.toLowerCase(), password: fakeUser.password, remember_me: true})
             .end(function(err, res){
               agent2.saveCookies(res);
               done();
@@ -227,10 +224,10 @@ describe('account pages:', function () {
         .get('/api/account/security')
         .agent(agent2)
         .end(function(err, res){
-          should.exist(res.body[0].token);
+          should.exist(res.body[0]);
           //TODO: maybe a content test
-          res.body[0].token.ip.should.equal("127.0.0.1")
-          res.body[0].token.nodeType.should.equal("LoginToken")
+          res.body[0].ip.should.equal("127.0.0.1")
+          res.body[0].nodeType.should.equal("LoginToken")
           done();
         });
     });
@@ -247,15 +244,15 @@ describe('account pages:', function () {
             .get('/api/account/security')
             .agent(agent3)
             .end(function(err, res){
-              cookie = res.body[0].token;
-              should.exist(res.body[0].token);
+              cookie = res.body[0];
+              should.exist(res.body[0]);
               done();
             });
         });
     });
     it('should allow deletion of login tokens', function(done){
       request
-        .del('/api/account/security/'+ cookie.autoIndexSeries + '/' + cookie.token)
+        .del('/api/account/security/'+ cookie._id)
         .agent(agent3)
         .end(function(err, res){
           res.should.have.status(200);
@@ -307,44 +304,47 @@ describe('account pages:', function () {
           .get('/api/account/linkedAccounts')
           .agent(agent)
           .end(function(err, res){
-            // console.log('providers '+ JSON.stringify(res.body));
             res.body.should.be.an.array;
             res.body.should.have.length(1);
-            should.exist(res.body[0].oAuth);
+            should.exist(res.body[0]);
             //TODO: content test
             done();
           });
       });
     });
 
-    // it('should allow the removal of a linked account', function(done){
-    //   request
-    //     .get('/api/account/linkedAccounts')
-    //     .agent(agent)
-    //     .end(function(err, res){
-    //       request
-    //         .delete('/api/account/linkedAccounts/'+res.body[0].oAuth.profileId)
-    //         .agent(agent)
-    //         .end(function(err, res){
-    //           res.should.have.status(200);
-    //           done();
-    //         });
-    //     });
-    // });
-    // it('should reject the removal of a linked account with a bad id', function(done){
-    //   request
-    //     .get('/api/account/linkedAccounts')
-    //     .agent(agent)
-    //     .end(function(err, res){
-    //       request
-    //         .delete('/api/account/linkedAccounts/1234')
-    //         .agent(agent)
-    //         .end(function(err, res){
-    //           res.should.have.status(200);
-    //           done();
-    //         });
-    //     });
-    // });
+    it('should allow the removal of a linked account', function(done){
+      authService.loginOrCreate('facebook', facebook, function(err, user){
+        request
+          .get('/api/account/linkedAccounts')
+          .agent(agent)
+          .end(function(err, res){
+            request
+              .del('/api/account/linkedAccounts/'+res.body[0]._id)
+              .agent(agent)
+              .end(function(err, res){
+                res.should.have.status(200);
+                done();
+              });
+          });
+      });
+    });
+    it('should reject the removal of a linked account with a bad id', function(done){
+      authService.loginOrCreate('facebook', facebook, function(err, user){
+        request
+          .get('/api/account/linkedAccounts')
+          .agent(agent)
+          .end(function(err, res){
+            request
+              .del('/api/account/linkedAccounts/1234')
+              .agent(agent)
+              .end(function(err, res){
+                res.should.have.status(412);
+                done();
+              });
+          });
+      });
+    });
   });
 
   //  All returning 500 - not sure why - but 500 works
@@ -377,8 +377,7 @@ describe('account pages:', function () {
         .send({first: 'First', last: 'Name', email: 'NewName@test.com', gender: 'male', password: 'TestPassword'})
         .end(function(err, res){
           should.not.exist(err);
-          console.log('response '+JSON.stringify(res.body))
-          res.should.have.status(500);
+          res.should.have.status(401);
           done();
         });
     });
@@ -389,8 +388,8 @@ describe('account pages:', function () {
         .agent(agent)
         .send({currentPassword: fakeUser.password, newPassword: 'Testing', passwordConfirm: 'Testing'})
         .end(function(err, res){
-          res.should.have.status(500);
-          User.findByEmail(fakeUser.email, function(err, user){
+          res.should.have.status(401);
+          User.findOne({email: fakeUser.email.toLowerCase()}, function(err, user){
             user.checkPassword(fakeUser.password, function(err, isMatch){
               isMatch.should.be.true;
               done();
@@ -405,7 +404,7 @@ describe('account pages:', function () {
         .agent(agent)
         .end(function(err, res){
           should.not.exist(res.body[0]);
-          res.should.have.status(500);
+          res.should.have.status(401);
           done();
         });
     });

@@ -1,0 +1,31 @@
+<div class="span3">
+  <div ng-show="facebook">
+    <h3>Facebook
+      <button class="btn pull-right" type="remove" ng-click="removeLinkedAccount(facebook.provider, facebook._id)"><i class="icon-remove-sign"></i></button>
+    </h3>
+    <img ng-src={{facebook.picture}}>
+  </div>
+  <div ng-hide="facebook">
+    <p><a class="hand" ng-click="oAuth('facebook')">Link your Facebook Account</a></p>
+    <a class="btn btn-large" ng-click="oAuth('facebook')">
+      <img src='/images/facebook.png'>
+      &nbsp; Facebook &nbsp; &nbsp;
+    </a>
+  </div>
+</div>
+
+<div class="span3 pull-right">
+  <div ng-show="google">
+    <h3>Google
+      <button class="btn pull-right" type="remove" ng-click="removeLinkedAccount(google.provider, google._id)"><i class="icon-remove-sign"></i></button>
+    </h3>
+    <img ng-src={{google.picture}}>
+  </div>
+  <div ng-hide="google">
+    <p><a class="hand" ng-click="oAuth('google')">Link your Google Account</a></p>
+    <a class="btn btn-large" ng-click="oAuth('google')">
+      <img src='/images/google.png'>
+      &nbsp; Google &nbsp; &nbsp; &nbsp; &nbsp;
+    </a>
+  </div>
+</div>

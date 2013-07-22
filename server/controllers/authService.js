@@ -14,27 +14,9 @@ var useragent = require('express-useragent')
   , env = process.env.NODE_ENV || 'development'
   , config = require('../config/config')[env]
   , errorMessages = require('../config/errorMessages')
-  , mailerService = require('./mailerService')
+  , mailerService = require('./mailerService');
   // , logger = require('./loggerService.js').logger;
-  , routes;
 
-var filterUser = function(user) {
-  if ( user ) {
-    return {
-      user : {
-        id: user.id,
-        email: user.email,
-        first: user.first,
-        last: user.last,
-        gender: user.gender,
-        birthday: user.birthday,
-        hasPassword: user.hashed_password ? true: false
-      }
-    };
-  } else {
-    return { user: null };
-  }
-};
 
 /**
  * Middelware to validate whether the user is logged is
@@ -49,7 +31,7 @@ exports.isLoggedIn = function(req, res, next) {
     return next();
   }
   else {
-    return res.json(401, errorMessage.loginRequired);
+    return res.json(401, errorMessages.loginRequired);
   }
 };
 
@@ -72,7 +54,8 @@ exports.isLoggedIn = function(req, res, next) {
 // };
 
 exports.getCurrentUser = function(req, res){
-  res.json(200, filterUser(req.user));
+  // res.json(200, filterUser(req.user));
+  res.json(200, req.user);
 };
 
 /**
@@ -90,25 +73,18 @@ exports.activate = function(req, res, next) {
   req.assert('activationKey', errorMessages.invalidActivationKey).isUUID(4);
   var errors = req.validationErrors();
   if(errors){
-    // req.session.error = errors[0].msg;
-    // return res.redirect(routes.home.url);
     return res.json(412, errors);
   }
   else {
-    User.getIndexedNode('node_auto_index', 'activationKey',
-      req.body.activationKey, function(err, user) {
+    // User.getIndexedNode('node_auto_index', 'activationKey', req.body.activationKey, function(err, user) {
+    User.findOne({activationKey: req.body.activationKey}, function(err, user){
       // validate if a user exists for the selected key
       if (err || !user) {
-        // req.session.error = errorMessages.invalidActivationKey;
         return res.json(412, errorMessages.invalidActivationKey);
-        // return res.redirect(routes.home.url);
       }
       // validate if the key has already been used
       else if (user.activationKeyUsed) {
-        // req.session.error = errorMessages.usedActivationKey;
         return res.json(412, errorMessages.usedActivationKey);
-        // return res.redirect(routes.home.url);
-        // return res.redirect(urls.login);
       }
       // activate the user if the validations pass
       else {
@@ -120,9 +96,7 @@ exports.activate = function(req, res, next) {
 
         user.update(updates, function(err) {
           if(err) {
-            req.session.error = errorMessage.failedToSave;
             return res.json(412, errorMessages.failedToSave);
-            // return res.redirect(routes.home.url);
           }
           user.emit('activated');
           req.newUser = user;
@@ -144,7 +118,7 @@ exports.activate = function(req, res, next) {
  * @return {Function} callback Callback.
  */
 exports.authenticate = function(email, password, callback) {
-  User.findByEmail(email, function(err, user) {
+  User.findOne({email: email.toLowerCase()}, function(err, user) {
     if (err || !user) {
       return callback(err, null);
     }
@@ -152,7 +126,6 @@ exports.authenticate = function(email, password, callback) {
     else if (user.isLocked) {
       // just increment login attempts if account is already locked
       user.incLoginAttempts(function(err) {
-        // if (err) { return callback(err, null, null); }
         return callback(err, null, errorMessages.accountSuspended);
       });
     }
@@ -170,7 +143,6 @@ exports.authenticate = function(email, password, callback) {
         if (!isPasswordMatch) {
           // password is incorrect, increment login attempts before responding
           user.incLoginAttempts(function(err) {
-            // if (err) { return callback(err, null); }
             return callback(err, null, errorMessages.incorrectPassword);
           });
         }
@@ -230,7 +202,9 @@ exports.loginUser = function(req, res, next) {
             autoIndexSeries: uuid()
           });
           var relationship = {
-            email: req.body.email.toLowerCase(),
+            nodeLabel: 'User',
+            indexField: 'email',
+            indexValue: req.body.email.toLowerCase(),
             type: 'AUTHORISES',
             direction: 'from'
           };
@@ -238,12 +212,14 @@ exports.loginUser = function(req, res, next) {
             if(err) return next(err);
             res.cookie('logintoken', response.node.getCookieValue(),
               { maxAge: 2 * 604800000, signed: true, httpOnly: true });
-            res.json(200, filterUser(newUser));
+            // res.json(200, filterUser(newUser));
+            res.json(200, newUser);
           });
         });
     }
     else {
-      res.json(200, filterUser(newUser));
+      // res.json(200, filterUser(newUser));
+      res.json(200, newUser);
     }
   });
 };
@@ -267,10 +243,11 @@ exports.loginFromCookie = function(req, res, next) {
       autoIndexSeries: cookie.autoIndexSeries,
       token: cookie.token
     };
-    LoginToken.getToken(cookieInfo, function(err, user, token){
+    // LoginToken.getToken(cookieInfo, function(err, user, token){
+    LoginToken.findOne(cookieInfo, function(err, user, token){
       if(!token){
+        // TODO: this means cookie has been compromised - warning?
         LoginToken.removeTokenSeries(cookie.autoIndexSeries, function(err) {
-          // TODO: this means cookie has been compromised - warning?
           res.clearCookie('logintoken');
           return next();
         });
@@ -312,25 +289,20 @@ exports.validatePasswordReset = function(req, res, next) {
   req.assert('user_id', errorMessages.invalidPasswordKey).isAlphanumeric();
   var errors = req.validationErrors();
   if(errors){
-    // req.session.error = errors[0];
     return res.json(412, errors);
-    // return res.redirect(routes.home.url);
   }
   else {
     // find the corresponding user for the password reset key and id
-    User.findPassReset(req.body.user_id, req.body.passwordResetKey,
+    // User.findPassReset(req.body.user_id, req.body.passwordResetKey,
+    User.findOne({_id: req.body.user_id, passwordResetKey: req.body.passwordResetKey},
       function(err, user) {
       //fail validation if user cannot be found
       if (err || !user) {
-        // req.session.error = errorMessages.invalidPasswordKey;
         return res.json(412, errorMessages.invalidPasswordKey);
-        // return res.redirect(routes.home.url);
       }
       // fail validation if key is already used
       else if (user.passwordResetUsed) {
-        // req.session.error = errorMessages.usedPasswordKey;
         return res.json(412, errorMessages.usedPasswordKey);
-        // return res.redirect(routes.home.url);
       }
       else {
         // var expiryTimeout = 1; testing
@@ -339,9 +311,7 @@ exports.validatePasswordReset = function(req, res, next) {
 
         // fail validation if the key has timed out
         if (user.passwordResetDate < currentDate - expiryTimeout) {
-          // req.session.error = errorMessages.expiredPasswordKey;
           return res.json(412, errorMessages.expiredPasswordKey);
-          // return res.redirect(routes.forgotPassword.url);
         }
         // pass validation
         else {
@@ -376,7 +346,7 @@ exports.register = function(req, res) {
     return res.json(412,  errors );
   }
   else {
-    User.findByEmail(req.body.email, function(err, user){
+    User.findOne({email: req.body.email.toLowerCase()}, function(err, user){
       if(user && user.active){
         return res.json(412,  errorMessages.userRegisteredAndActive );
       }
@@ -384,22 +354,18 @@ exports.register = function(req, res) {
         return res.json(412,  errorMessages.userRegisteredNotActive );
       }
       else {
-        // var month = parseInt(req.body.birthday_dateLists_month_list)+1;
         var user = new User({
           first: req.body.first,
           last: req.body.last,
           email: req.body.email,
           gender: req.body.gender,
           password: req.body.password,
-          birthday: req.body.birthday,
+          // birthday: req.body.birthday,
           activationKey: uuid()
         });
 
         user.save(function(err, user){
           if(err) {
-            // req.session.formData = req.body;
-            // req.session.error = err;
-            // return res.redirect(routes.home.url);
             return res.json(412,  err );
           }
           else {
@@ -423,9 +389,7 @@ exports.register = function(req, res) {
               // should already be logged by mailerService
             });
             // do not wait for mail callback to proceed. Can take a few seconds
-            // return res.render(routes.registerSuccess.template,
-            //   { title: routes.registerSuccess.title });
-            return res.json(200);
+            return res.json(200, user);
           }
         });
       }
@@ -444,7 +408,8 @@ exports.register = function(req, res) {
  */
 exports.loginOrCreate = function(provider, profile, callback){
   //find by oauth2 provider
-  OAuthProvider.find(provider, profile._json.id, function(err, user) {
+  // OAuthProvider.find(provider, profile._json.id, function(err, user) {
+  OAuthProvider.findOne({id: profile._json.id, provider: provider}, function(err, user) {
     if (err) {
       return callback(err);
     }
@@ -465,9 +430,9 @@ exports.loginOrCreate = function(provider, profile, callback){
       // oAuthProvider.id = parseInt(oAuthProvider.id);
 
       // rename facebook and google variables
-      // TODO: If you add more porviders update these
-      oAuthProvider.profileId = oAuthProvider.id;
-      delete oAuthProvider.id;
+      // TODO: If you add more providers update these
+      // oAuthProvider.profileId = oAuthProvider.id;
+      // delete oAuthProvider.id;
       oAuthProvider.first = oAuthProvider.first_name || oAuthProvider.given_name;
       delete oAuthProvider.first_name;
       delete oAuthProvider.given_name;
@@ -479,8 +444,10 @@ exports.loginOrCreate = function(provider, profile, callback){
       oAuthProvider = new OAuthProvider(oAuthProvider);
 
       // validate if email already exists
-      User.findByEmail(oAuthProvider.email, function(err, user) {
+      User.findOne({email: oAuthProvider.email }, function(err, user) {
         var rel = {
+          nodeLabel: 'User',
+          indexField: '_id',
           direction: 'from',
           type: 'OAUTHORISES'
         };
@@ -496,8 +463,10 @@ exports.loginOrCreate = function(provider, profile, callback){
           };
           var newUser = new User(user);
           newUser.save(function(err, user){
-            rel.id = user.id;
             if(err) return callback(err);
+            // populate the missing relationship fields
+            rel.indexValue = user._id;
+
             oAuthProvider.save(rel, function(err, oAuthProvider){
               if(err) return callback(err);
               user.emit('activated');
@@ -506,8 +475,9 @@ exports.loginOrCreate = function(provider, profile, callback){
           });
         }
         else {
-          if(!user.id) user = user[0];
-          rel.id = user.id;
+          if(!user._id) user = user[0];
+          // populate the missing relationship fields
+          rel.indexValue = user._id;
 
           if (!user.birthday || (typeof user.birthday !== "number" && user.birthday.slice(0,4) === '0000')) {
             user.birthday = birthday;
@@ -541,16 +511,12 @@ exports.loginOrCreate = function(provider, profile, callback){
  *                      200: Activation link resent.
  */
 exports.resendActivationLink = function(req, res) {
-  User.findByEmail(req.body.email, function(err, user) {
+  User.findOne({email: req.body.email.toLowerCase()}, function(err, user) {
     if(err || !user){
-      // req.session.error = errorMessages.invalidEmail;
       return res.json(412, errorMessages.userNotRegistered);
-      // return res.redirect(routes.resendActivation.url);
     }
     if (user.active) {
-      // req.session.error = errorMessages.userRegisteredAndActive;
       return res.json(412, errorMessages.userRegisteredAndActive);
-      // return res.redirect(routes.resendActivation.url);
     }
     else {
       // if the user has been de-activated but wants to re-activate
@@ -578,8 +544,6 @@ exports.resendActivationLink = function(req, res) {
       mailerService.sendMail(options, data, function(err, response) {
         //TODO: what should happen if this email fails???
       });
-      // return res.render(routes.activationResent.template,
-      //         { title: routes.activationResent.title });
       return res.json(200)
     }
   });
@@ -597,12 +561,8 @@ exports.resendActivationLink = function(req, res) {
  *                      200: Password link sent.
  */
 exports.sendPasswordLink = function(req,res) {
-  User.findByEmail(req.body.email, function(err, user) {
-    // fail if user cannot be found
+  User.findOne({email: req.body.email.toLowerCase()}, function(err, user) {
     if (err || !user) {
-      // req.session.error = errorMessages.invalidEmail;
-      // return res.redirect(routes.sendPasswordLink.url,
-      //         { title: routes.sendPasswordLink.title });
       return res.json(412, errorMessages.userNotRegistered);
     }
     else {
@@ -614,7 +574,7 @@ exports.sendPasswordLink = function(req,res) {
       //save the key
       user.save(function(err) {
         if (err) {
-          return res.json(500, errorMessages.failedToSave);
+          return res.json(400, errorMessages.failedToSave);
         }
         else {
           // mail service requires options for the email
@@ -629,7 +589,7 @@ exports.sendPasswordLink = function(req,res) {
             email: user.email,
             name: user.first,
             appName: config.appName,
-            activationLink: 'http://' + req.headers.host + '/resetPassword/' + user.id + '/' +
+            activationLink: 'http://' + req.headers.host + '/resetPassword/' + user._id + '/' +
               user.passwordResetKey
           };
 
@@ -643,8 +603,6 @@ exports.sendPasswordLink = function(req,res) {
           });
           // dont wait for the mailService to return before responding
           return res.json(200);
-          // return res.render(routes.passwordLinkSent.template,
-          //     { title: routes.passwordLinkSent.title });
         }
       });
     }
@@ -683,40 +641,12 @@ exports.changeForgottenPassword = function(req, res, next) {
   user.passwordResetUsed = true;
   user.save(function(err){
     if (err) {
-      return res.json(500, err);
+      return res.json(400, err);
     }
     else {
       req.newUser = user;
       return next();
     }
-  });
-};
-
-/**
- * Get linked social accounts
- * @param  {object} req Request.
- * @param  {object} res Response.
- * @return {JSON}       500. Error occured.
- *                      200. List of providers.
- */
-exports.getLinkedAccounts = function(req, res) {
-  OAuthProvider.getAccounts(req.user.id, function (err, providers){
-    if(err) return res.json(500, err);
-    return res.json(200, providers);
-  });
-};
-
-/**
- * Remove a linked social account
- * @param  {object} req Request.
- * @param  {object} res Response.
- * @return {JSON}       500. Error occured.
- *                      200. Account removed.
- */
-exports.removeLinkedAccount = function(req, res) {
-  OAuthProvider.removeAccount(req.params.id, function (err){
-    if(err) return res.json(500, err);
-    return res.json(200);
   });
 };
 
@@ -731,9 +661,9 @@ exports.logout = function(req, res) {
   req.logOut();
   if (req.signedCookies.logintoken) {
     var cookie = JSON.parse(req.signedCookies.logintoken);
-    LoginToken.removeToken(
+    LoginToken.findOneAndRemove(
       { autoIndexSeries: cookie.autoIndexSeries, token: cookie.token }
-      , function(err) {
+      , {remove: {force: true}}, function(err) {
       // need to remove the token
       res.clearCookie('logintoken');
       return res.json(204);

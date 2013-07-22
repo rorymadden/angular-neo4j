@@ -38,7 +38,6 @@ describe('sessions', function(){
   it('should be able to retrieve sessions', function(done){
     store.get('123', function(err, data){
       should.not.exist(err);
-      // console.log(data);
       data.should.be.a('object').and.have.property('name', sessionData.name);
       data.cookie.should.be.a('object').and.have.property('maxAge', sessionData.cookie.maxAge );
       done();

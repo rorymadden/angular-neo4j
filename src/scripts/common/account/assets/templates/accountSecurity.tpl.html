@@ -1,0 +1,30 @@
+<div ng-show="cookies.length">
+  <h3>Logged In</h3>
+  <table class="table table-hover table-striped">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Country</th>
+        <th>City</th>
+        <th>Browser</th>
+        <th>OS</th>
+        <th>Date</th>
+        <th>Remove</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="cookie in cookies | orderBy:'cookie.created'">
+        <td>{{$index + 1}}</td>
+        <td>{{cookie.country}}</td>
+        <td>{{cookie.city}}</td>
+        <td>{{cookie.browser}}</td>
+        <td>{{cookie.os}}</td>
+        <td>{{cookie.created | date:'dd MMMM yyyy hh:mm a'}}</td>
+        <td><button class="btn" type="remove" ng-click="removeToken(cookie._id)"><i class="icon-remove-sign"></i></button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div ng-hide="cookies.length">
+  <p>There are no cookies in use</p>
+</div>

@@ -1,3 +1,0 @@
-describe('login-form', function() {
-
-});

@@ -1,8 +1,6 @@
 var neoprene = require('neoprene');
 var bcrypt = require('bcrypt');
 var Schema = neoprene.Schema;
-// var events = require('events').EventEmitter;
-// var timestamp = require('mongoose-timestamp')
 
 var env = process.env.NODE_ENV || 'development';
 var errorMessages = require('../config/errorMessages')
@@ -21,16 +19,16 @@ var LOCK_TIME = 5 * 60 * 1000;
 var UserSchema = new Schema({
   first:{ type: String, required: true, trim: true },
   last:{ type: String, required: true, trim: true },
-  email: { type: String, required: true, lowercase: true, trim: true },
+  email: { type: String, required: true, lowercase: true, trim: true, index: {unique: true }},
   gender: { type: String, required: true, default: 'unknown', enum: GENDER },
   birthday: { type: Date },
-
   active:{ type: Boolean, default: false },
 
+  //sensitive fields
   hashed_password: { type: String },
-  activationKey: { type: String },
+  activationKey: { type: String, index: true },
   activationKeyUsed: { type: Boolean, default: false },
-  passwordResetKey: { type: String },
+  passwordResetKey: { type: String, index: true},
   passwordResetDate: { type: Date },
   passwordResetUsed: { type: Boolean },
   loginAttempts: { type: Number, required: true, default: 0 },
@@ -38,7 +36,24 @@ var UserSchema = new Schema({
   accountDeactivated: { type: Boolean, default: false }
 });
 
+// overwrite the toJSON method to exclude some of the sensitive fields
+UserSchema.methods.toJSON = function() {
+  var obj = this.toObject();
+  obj.hasPassword = obj.hashed_password ? true: false;
+  delete obj.hashed_password;
+  delete obj.activationKey;
+  delete obj.activationKeyUsed;
+  delete obj.passwordResetKey;
+  delete obj.passwordResetUsed;
+  delete obj.passwordResetDate;
+  delete obj.loginAttempts;
+  delete obj.lockUntil;
+  delete obj.accountDeactivated;
+  delete obj.__v;
+  return obj;
+}
 
+// add some easy access virtuals
 UserSchema
    .virtual('name')
    .get(function () {
@@ -76,8 +91,6 @@ UserSchema.methods.incLoginAttempts = function(callback) {
   // if we have a previous lock that has expired, restart at 1
   if (this.lockUntil && this.lockUntil < Date.now()) {
     return this.update({
-      // $set: { "auth.loginAttempts": 1 },
-      // $unset: { "auth.lockUntil": 1 }
       "loginAttempts": 0,
       "lockUntil": null
     }, callback);
@@ -90,34 +103,6 @@ UserSchema.methods.incLoginAttempts = function(callback) {
     updates.lockUntil = Date.now() + LOCK_TIME;
   }
   return this.update(updates, callback);
-};
-
-
-UserSchema.statics.findByEmail = function(email, callback) {
-  if(!email) {
-    return callback(errorMessages.invalidEmail, null);
-  }
-  else {
-    neoprene.getIndexedNode('node_auto_index', 'email',
-      email.toLowerCase().trim(), 'User', function(err, node){
-        if(err) return callback(err);
-        return callback(null, node);
-    });
-  }
-};
-
-UserSchema.statics.findPassReset = function(id, token, callback) {
-  if(!id || typeof(id) === 'function') {
-    return callback(errorMessages.invalidPasswordKey, null);
-  }
-  else {
-    neoprene.getIndexedNode('node_auto_index', 'passwordResetKey',
-      token, function(err, node){
-        if(err) return callback(err);
-        if(node.id != id) return callback(errorMessages.invalidPasswordKey);
-        return callback(null, node)
-    });
-  }
 };
 
 /**
@@ -133,7 +118,7 @@ UserSchema.pre('validate', function (next) {
     return;
   }
   // Encrypt the password with bcrypt
-  // Encrypting here, thater than earlier in case other validation fails
+  // Encrypting here, rather than earlier in case other validation fails
   bcrypt.genSalt(10, function(err, salt) {
     if (err) { return next(err); }
     bcrypt.hash(user._password, salt, function(err, hash) {
@@ -144,11 +129,5 @@ UserSchema.pre('validate', function (next) {
   });
 });
 
-
-UserSchema.post('activated', function(next){
-  //create a new project and relationship between them
-  // console.log('post works activated')
-  // event.emit('newProject', {user: this});
-});
 
 module.exports = neoprene.model('node', 'User', UserSchema);

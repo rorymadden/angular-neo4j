@@ -1,17 +1,8 @@
 'use strict';
 
-var User = require('../models/user');
-var LoginToken = require('../models/loginToken');
-var uuid = require('uuid-v4');
-var useragent = require('express-useragent');
-
-var env = process.env.NODE_ENV || 'development';
-var config = require('../config/config')[env];
-var errorMessages = require('../config/errorMessages');
-
-var mailerService = require('./mailerService.js');
-var logger = require('./loggerService.js').logger;
-var routes;
+var LoginToken = require('../models/loginToken')
+  , OAuthProvider = require('../models/oAuthProvider')
+  , errorMessages = require('../config/errorMessages');
 
 /*
  * Account Routes
@@ -36,7 +27,7 @@ exports.editAccount = function(req, res) {
   }
   else {
     req.user.checkPassword(req.body.password, function(err, isMatch){
-      if (err) { return res.json(500, err); }
+      if (err) { return res.json(400, err); }
       if(!isMatch) {
         return res.json(412, errorMessages.incorrectPassword);
       }
@@ -57,33 +48,6 @@ exports.editAccount = function(req, res) {
 };
 
 /**
- * Get Security Tokens
- * @param  {object} req Request.
- * @param  {object} res Response.
- * @return {render}     Renders the specified template.
- */
-exports.getLoginTokens = function(req, res) {
-  LoginToken.getTokens(req.user.email, function(err, cookies){
-    if(err) { return res.json(500, err); }
-    return res.json(200, cookies);
-  });
-};
-
-/**
- * Remove Cookie
- * @param  {object} req Request.
- * @param  {object} res Response.
- * @return {render}     500, with error: Failed to remove cookie from database
- *                      200: Cookie removed.
- */
-exports.removeLoginToken = function(req, res) {
-  LoginToken.removeToken({autoIndexSeries: req.params.autoIndexSeries, token: req.params.token}, function(err){
-    if(err) { return res.json(500, errorMessages.failedToRemoveToken); }
-    return res.json(200);
-  });
-};
-
-/**
  * Change a user password. User is validated by email token or existing password
  * Called from changeForgottenPassword as well as from account page
  * @param  {object}   req   Request.
@@ -93,7 +57,6 @@ exports.removeLoginToken = function(req, res) {
  *                               Existing password is incorrect
  *                               New password does not meet policy
  *                               New Password and confirmation do not match
- *                          500, with error: Failed to save user in database
  *                          200: Password Changed.
  */
 exports.changePassword = function(req, res, next) {
@@ -111,14 +74,14 @@ exports.changePassword = function(req, res, next) {
   }
   else {
     req.user.checkPassword(req.body.currentPassword, function(err, isMatch){
-      if (err) { return res.json(500, err); }
+      if (err) { return res.json(400, err); }
       if(!isMatch) {
         return res.json(412, errorMessages.incorrectPassword);
       }
       else {
         req.user.password = req.body.newPassword;
         req.user.save(function(err){
-          if (err) { return res.json(500, err); }
+          if (err) { return res.json(400, err); }
           return res.json(200);
         });
       }
@@ -127,10 +90,68 @@ exports.changePassword = function(req, res, next) {
 };
 
 /**
+ * Get Security Tokens
+ * @param  {object} req Request.
+ * @param  {object} res Response.
+ * @return {render}     Renders the specified template.
+ */
+exports.getLoginTokens = function(req, res) {
+  // LoginToken.getTokens(req.user.email, function(err, cookies){
+  req.user.getIncomingRelationships('AUTHORISES', function(err, cookies){
+    if(err) { return res.json(400, err); }
+    return res.json(200, cookies.nodes);
+  });
+};
+
+/**
+ * Remove Cookie
+ * @param  {object} req Request.
+ * @param  {object} res Response.
+ * @return {render}     400, with error: Failed to remove cookie from database
+ *                      200: Cookie removed.
+ */
+exports.removeLoginToken = function(req, res) {
+  // could use findOneAndRemove but this query is more efficient
+  LoginToken.findByIdAndRemove(req.params.id, {remove: {force: true }}, function(err){
+    if(err) { return res.json(412, errorMessages.failedToRemoveToken); }
+    return res.json(200);
+  });
+};
+
+/**
+ * Get linked social accounts
+ * @param  {object} req Request.
+ * @param  {object} res Response.
+ * @return {JSON}       400. Error occured.
+ *                      200. List of providers.
+ */
+exports.getLinkedAccounts = function(req, res) {
+  // OAuthProvider.getAccounts(req.user.id, function (err, providers){
+  req.user.getIncomingRelationships('OAUTHORISES', function(err, providers){
+    if(err) return res.json(400, err);
+    return res.json(200, providers.nodes);
+  });
+};
+
+/**
+ * Remove a linked social account
+ * @param  {object} req Request.
+ * @param  {object} res Response.
+ * @return {JSON}       400. Error occured.
+ *                      200. Account removed.
+ */
+exports.removeLinkedAccount = function(req, res) {
+  OAuthProvider.findByIdAndRemove(req.params.id, {remove: {force: true }}, function (err){
+    if(err) return res.json(412, err);
+    return res.json(200);
+  });
+};
+
+/**
  * Deactivate Account
  * @param  {object} req Request.
  * @param  {object} res Response.
- * @return {render}     500, with error: Failed to update user in database
+ * @return {render}     400, with error: Failed to update user in database
  *                      200: Account deactivated.
  */
 exports.deactivateAccount = function(req, res) {
@@ -140,7 +161,7 @@ exports.deactivateAccount = function(req, res) {
   };
 
   req.user.update(updates, function (err, user) {
-    if (err) { return res.json(500, errorMessages.failedToSave); }
+    if (err) { return res.json(400, err); }
     return res.json(200, user);
   });
 };

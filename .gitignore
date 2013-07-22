@@ -2,7 +2,8 @@ node_modules
 dist
 .tmp
 .sass-cache
-app/bower_components
+src/bower_components
 server/config/config.js
 dump.rdb
 .DS_Store
+*.log

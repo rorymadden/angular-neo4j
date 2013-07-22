@@ -10,11 +10,12 @@
     "angular-cookies": "~1.0.7",
     "angular-sanitize": "~1.0.7",
     "angular-bootstrap": "~0.3.0",
-    "angular-date-dropdowns": "latest"
+    "angular-date-dropdowns": "latest",
+    "ui-router": "~0.0.1"
   },
   "devDependencies": {
     "angular-mocks": "~1.0.7",
     "angular-scenario": "~1.0.7",
-    "jquery": "~2.0.1"
+    "jquery": "~1.8.2"
   }
 }

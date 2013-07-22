@@ -7,7 +7,6 @@ var app = express();
 var RedisStore = require('connect-redis')(express);
 var expressValidator = require('express-validator');
 var passport = require('passport');
-var events = require('events').EventEmitter;
 
 var env = process.env.NODE_ENV || 'development';
 var config = require('./config/config')[env];
@@ -35,15 +34,15 @@ app.configure(function() {
 
   // Configure session to use Redis as store
   app.use(express.session({
-      key: 'express.sid'
-    , secret: config.sess.secret
-    , store: new RedisStore({
-        host: config.redis.host,
-        port: config.redis.port,
-        db: config.redis.db,
-        pass: config.redis.pass,
-        ttl: config.redis.ttl
-      })
+    key: 'express.sid',
+    secret: config.sess.secret,
+    store: new RedisStore({
+      host: config.redis.host,
+      port: config.redis.port,
+      db: config.redis.db,
+      pass: config.redis.pass,
+      ttl: config.redis.ttl
+    })
   }));
 
   app.use(passport.initialize());
@@ -61,30 +60,31 @@ app.configure(function() {
       return token;
     };
     app.use(express.csrf({value: csrfValue}));
-  };
+    // put the csrf token from the header into the cookie for angular to pickup
+    app.use(function(req, res, next) {
+      res.cookie('XSRF-TOKEN', req.session._csrf);
+      next();
+    });
+  }
 
-  // put the csrf token from the header into the cookie for angular to pickup
-  app.use(function(req, res, next) {
-    res.cookie('XSRF-TOKEN', req.session._csrf);
-    next();
-  });
 
-  // Need to be careful for similar filenames inrouter as
-  // static files will be loaded first
   app.use(express.compress());
+
   // staticCache has been deprecated.
   // TODO: investigate varnish / nginx for caching
   // app.use(express.staticCache());
 
 
   // host dev files if in dev mode
-  if (app.get('env') === 'development') {
+  if (app.get('env') === 'development' || app.get('env') === 'test') {
     app.use(express.static(__dirname + '/../.tmp'));
-    app.use(express.static(__dirname + '/../app'));
+    app.use(express.static(__dirname + '/../src'));
   } else {
-    app.use(express.static(__dirname + '/../dist'));
+    app.use(express.static(__dirname + '/../dist'),  {maxAge: 86400000});
   }
 
+  // Need to be careful for similar filenames inrouter as
+  // static files will be loaded first
   app.use(app.router);
 
   // Since this is the last non-error-handling

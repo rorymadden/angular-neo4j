@@ -10,7 +10,7 @@ var fs = require('fs');
  */
 exports.disposableEmail = function(email, callback){
   var badEmailsTxt = 'config/disposableEmailProviders.txt';
-  
+
   var badEmails = [];
   var emailParts=email.split("@");
   var array = fs.readFileSync(badEmailsTxt).toString().split("\n");
