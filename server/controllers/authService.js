@@ -380,7 +380,7 @@ exports.register = function(req, res) {
               email: user.email,
               name: user.first,
               appName: config.appName,
-              activationLink: 'http://' + req.headers.host + '/activate/' +
+              activationLink: 'http://' + req.headers.host + '/register/' +
                 user.activationKey
             };
 
@@ -537,7 +537,7 @@ exports.resendActivationLink = function(req, res) {
         email: user.email,
         name: user.first,
         appName: config.appName,
-        activationLink: 'http://' + req.headers.host + '/activate/' +
+        activationLink: 'http://' + req.headers.host + '/register/' +
           user.activationKey
       };
 
@@ -589,7 +589,7 @@ exports.sendPasswordLink = function(req,res) {
             email: user.email,
             name: user.first,
             appName: config.appName,
-            activationLink: 'http://' + req.headers.host + '/resetPassword/' + user._id + '/' +
+            activationLink: 'http://' + req.headers.host + '/register/resetPassword/' + user._id + '/' +
               user.passwordResetKey
           };
 

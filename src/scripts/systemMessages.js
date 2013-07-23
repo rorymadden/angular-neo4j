@@ -1,77 +1,6 @@
 angular.module('system.messages', [])
 
 .constant('I18N.MESSAGES', {
-  // Generic Messages
-  // 10010: 'Successfully saved',
-  // 10020: 'Successfully updated',
-  // 10030: 'Successfully removed',
-  // 10510: 'An unexpected error occured. We\'ll look into that',
-  // 10520: 'Route change error. Now that\'s embarrasing!',
-
-  // // Common - Registration
-  // 20010: 'First Name is required',
-  // 20020: 'Last Name is required',
-  // 20030: 'Valid email required',
-  // 20040: 'We are a community here. Please do not use disposable email addresses',
-  // 20050: 'Password is required and must be between 6 and 128 characters',
-  // 20060: 'Gender is required',
-  // 20070: 'Date of Birth is required',
-
-  // 20150: 'The email address entered is already active. Please Login',
-  // 20160: 'The email address entered is already registered. Please Login',
-  // 20170: 'Thats not a valid activation link! Please try your meail again',
-  // 20180: 'Your activation link has already been used. Please Login',
-
-  // 20200: 'Registration successful, please check your email for your verification link.',
-  // 20210: 'Password Link successful, please check your email for your verification link.',
-  // 20220: 'Your password has been successfully changed.',
-  // 20230: 'Activation successful.',
-  // 20240: 'There was an issue with your activation. Please try again.',
-
-  // // Common - Login
-  // 20300: 'The email address entered is not active.',
-  // 20310: 'The email address entered is not registered. Please Register',
-  // 20320: 'The password entered is incorrect.',
-  // 20330: 'Your account has been locked due to too many incorrect login attempts. Please try again in 5 minutes',
-  // 20340: 'The email address entered is associated with a deactivated account.',
-  // 20350: 'You do not have the necessary access permissions.  Do you want to login as someone else?',
-  // 20360: 'You must be logged in to access this part of the application.',
-  // 20370: 'Login failed. Please check your credentials and try again.',
-  // 20380: 'There was a problem with authenticating: {{exception}}.',
-
-  // // Common - Forgot Password
-  // 20500: 'Cannot find user for selected password reset link. Click on the link in your email again or request a new one below',
-  // 20510: 'Your password reset link has already been used. Please request a new one below',
-  // 20520: 'Your password reset link has expired.',
-  // 20530: 'The passwords that you entered do not match. Please try again',
-
-  // // Common - Account
-  // 20600: 'Your account has been successfully updated.',
-  // 20610: 'Error retrieving other login tokens. Please try again',
-  // 20620: 'Error retrieving linked accounts. Please try again',
-
-
-  // 'register.activationSent': 'Registration successful, please check your email for your verification link.',
-  // 'register.passwordLinkSent': 'Password Link successful, please check your email for your verification link.',
-  // 'register.passwordChanged': 'Your password has been successfully changed.',
-  // 'register.activationSuccessful': 'Activation successful.',
-  // 'register.activationError': 'There was an issue with your activation. Please try again.',
-  // 'account.accountUpdated': 'Your account has been successfully updated.',
-  // 'errors.route.changeError': 'Route change error',
-  // 'errors.database.error': 'An unexpected error occurred. Please try again.',
-  // // 'crud.user.save.success':"A user with id '{{id}}' was saved successfully.",
-  // // 'crud.user.remove.success':"A user with id '{{id}}' was removed successfully.",
-  // // 'crud.user.remove.error':"Something went wrong when removing user with id '{{id}}'.",
-  // // 'crud.user.save.error':"Something went wrong when saving a user...",
-  // // 'crud.project.save.success':"A project with id '{{id}}' was saved successfully.",
-  // // 'crud.project.remove.success':"A project with id '{{id}}' was removed successfully.",
-  // // 'crud.project.save.error':"Something went wrong when saving a project...",
-  // 'login.reason.notAuthorized': 'You do not have the necessary access permissions.  Do you want to login as someone else?',
-  // 'login.reason.notAuthenticated': 'You must be logged in to access this part of the application.',
-  // 'login.error.invalidCredentials': 'Login failed.  Please check your credentials and try again.',
-  // 'login.error.serverError': 'There was a problem with authenticating: {{exception}}.',
-  // 'saved': 'Successfully saved.',
-  // 'removed': 'Successfully removed.',
 
   'generic.saved': {
     code: 10010,
@@ -96,6 +25,10 @@ angular.module('system.messages', [])
   'generic.removalHeader': {
     code: 10530,
     message: 'Confirm removal'
+  },
+  'generic.loading': {
+    code: 10540,
+    message: 'Loading...'
   },
 
   // Common - Registration

@@ -23,7 +23,11 @@ angular.module('services.i18nNotifications').factory('i18nNotifications', ['loca
     getCurrent: function () {
       return notifications.getCurrent();
     },
-    remove: function (notification) {
+    remove: function (notification, type) {
+      if(typeof notification === 'string') {
+        notification = prepareNotification(notification, type, {}, {});
+      };
+      // return notifications.remove(prepareNotification(notification));
       return notifications.remove(notification);
     },
     removeAll: function () {

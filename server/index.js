@@ -83,7 +83,7 @@ app.configure(function() {
     app.use(express.static(__dirname + '/../dist'),  {maxAge: 86400000});
   }
 
-  // Need to be careful for similar filenames inrouter as
+  // Need to be careful for similar filenames in router as
   // static files will be loaded first
   app.use(app.router);
 

@@ -1,23 +1,18 @@
-<div class="row">
-  <div class="span8" data-ng-include data-src="'scripts/common/account/assets/templates/benefits.tpl.html'"></div>
-  <div class="span4">
-    <form class="well" name="form">
-      <div>
-        <h2>Resend Activation</h2>
+<form class="well" name="form">
+  <div>
+    <h2>Resend Activation</h2>
 
-        <div class="control-group">
-          <label class="control-label" for='email'>Email</label>
-          <div class="controls">
-            <input id="email" class="span3" type='email'
-              name='email' data-ng-model="user.email" required>
-            <span class="help-block" ng-show="form.$error.email[0].$invalid && form.$error.email[0].$dirty">Please enter a valid email.</span>
-          </div>
-        </div>
-
-        <button class="btn btn-primary" ng-disabled='form.$invalid' ng-click='resendActivation()' id='resend'>Send Activation Link</button>
-        or
-        <a class="show-signup" href="/">cancel</a>
+    <div class="control-group">
+      <label class="control-label" for='email'>Email</label>
+      <div class="controls">
+        <input id="email" class="span3" type='email'
+          name='email' data-ng-model="user.email" required>
+        <span class="help-block" ng-show="form.$error.email[0].$invalid && form.$error.email[0].$dirty">Please enter a valid email.</span>
       </div>
-    </form>
+    </div>
+
+    <button class="btn btn-primary" ng-disabled='form.$invalid' ng-click='resendActivation()' id='resend'>Send Activation Link</button>
+    or
+    <a class="show-signup" href="/register">cancel</a>
   </div>
-</div>
+</form>

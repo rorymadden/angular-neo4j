@@ -143,32 +143,32 @@ describe('my app', function() {
   describe('activate', function() {
 
     beforeEach(function() {
-      browser().navigateTo('/activate/bad');
+      browser().navigateTo('/register/bad');
     });
 
 
     it('should automatically redirect to /resendActivation on a bad activation code', function() {
-      expect(browser().location().url()).toBe("/resendActivation");
+      expect(browser().location().url()).toBe("/register/resendActivation");
       expect(element('.alert-error').text()).toMatch("There was an issue with your activation. Please try again.");
     });
 
     it("should keep submit inactive if email format is incorrect", function(){
-      expect(browser().location().url()).toBe("/resendActivation");
+      expect(browser().location().url()).toBe("/register/resendActivation");
       input('user.email').enter('bad');
       expect(element('[ng-view] span:visible').text()).toMatch("Please enter a valid email.");
       expect(element('button#resend').prop("disabled")).toBeTruthy();
     });
 
     it("should error if email is not registered", function(){
-      expect(browser().location().url()).toBe("/resendActivation");
+      expect(browser().location().url()).toBe("/register/resendActivation");
       input('user.email').enter('bad@test.com');
       element('button#resend').click();
-      expect(browser().location().url()).toBe("/resendActivation");
+      expect(browser().location().url()).toBe("/register/resendActivation");
       expect(element('.alert-error').text()).toMatch("The email address entered is not registered. Please try again.");
     });
 
     it("should pass if email is registered", function(){
-      expect(browser().location().url()).toBe("/resendActivation");
+      expect(browser().location().url()).toBe("/register/resendActivation");
       input('user.email').enter('email@test.com');
       element('button#resend').click();
       pause();
@@ -178,7 +178,7 @@ describe('my app', function() {
 
     //TODO: how to test true condition (e.g. get real activation code?)
     // it("should activate with real activation code", function(){
-    //   browser().navigateTo('/activate/bad');
+    //   browser().navigateTo('/register/bad');
     // });
   });
 });

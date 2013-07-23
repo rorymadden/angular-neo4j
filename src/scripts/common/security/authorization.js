@@ -19,7 +19,7 @@ angular.module('security.authorization', ['security.service'])
   //   return securityAuthorization.isAuthenticated();
   // }],
 
-  $get: ['security', 'securityRetryQueue', '$location', function (security, queue, location) {
+  $get: ['security', 'securityRetryQueue', function (security, queue) {
     var service = {
 
       // Require that there is an authenticated user

@@ -51,12 +51,12 @@ angular.module('security.login.form', ['services.localizedMessages', 'ngSanitize
 
   $scope.forgotPassword = function () {
     security.cancelLogin();
-    $location.path('/forgotPassword');
+    $location.path('/register/forgotPassword');
   };
 
   $scope.resendActivation = function () {
     security.cancelLogin();
-    $location.path('/resendActivation');
+    $location.path('/register/resendActivation');
   };
 
   $scope.showResendLink = function() {

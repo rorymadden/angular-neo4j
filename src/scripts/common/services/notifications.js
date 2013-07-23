@@ -17,7 +17,8 @@ angular.module('services.notifications', []).factory('notifications', ['$rootSco
     return notificationObj;
   };
 
-  $rootScope.$on('$routeChangeSuccess', function () {
+  $rootScope.$on('$stateChangeSuccess', function () {
+  // $rootScope.$on('$routeChangeSuccess', function () {
     notifications.ROUTE_CURRENT.length = 0;
 
     notifications.ROUTE_CURRENT = angular.copy(notifications.ROUTE_NEXT);
@@ -42,10 +43,12 @@ angular.module('services.notifications', []).factory('notifications', ['$rootSco
 
   notificationsService.remove = function (notification) {
     angular.forEach(notifications, function (notificationsByType) {
-      var idx = notificationsByType.indexOf(notification);
-      if (idx > -1) {
-        notificationsByType.splice(idx, 1);
-      }
+      angular.forEach(notificationsByType, function(note){
+        var idx = note.message.indexOf(notification.message)
+        if (idx > -1) {
+          notificationsByType.splice(idx, 1);
+        }
+      });
     });
   };
 

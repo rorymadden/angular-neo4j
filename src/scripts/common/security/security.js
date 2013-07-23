@@ -7,7 +7,7 @@ angular.module('security.service', [
   'ui.bootstrap.dialog'     // Used to display the login form as a modal dialog.
 ])
 
-.factory('security', ['$http', '$q', '$location', 'securityRetryQueue', '$dialog', function ($http, $q, $location, queue, $dialog) {
+.factory('security', ['$http', '$q', '$location', 'securityRetryQueue', '$dialog', '$state', function ($http, $q, $location, queue, $dialog, $state) {
 
   // Redirect to the given url (defaults to '/')
   function redirect(url) {
@@ -45,7 +45,12 @@ angular.module('security.service', [
   function onLoginDialogClose(success) {
     loginDialog = null;
     if (success) {
+      // try delayed first
       queue.retryAll();
+      // redirect the user from a
+      if($state.current.name.substring(0,8) === 'register'){
+        redirect('/');
+      }
     } else {
       // if there is nothing in the queue then this was a voluntary login - ignore
       // if there is something in the queue then cancel the queue and redirect to register page

@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('angularNeo4jApp', [
+var app = angular.module('angularNeo4jApp', [
   'ui.state',
   'ui.bootstrap',
   'security',
@@ -25,33 +25,47 @@ angular.module('angularNeo4jApp', [
 //     });
 // }])
 
-.config(['$stateProvider', '$locationProvider', 'securityAuthorizationProvider', '$urlRouterProvider', function ($stateProvider, $locationProvider, securityAuthorizationProvider, $urlRouterProvider) {
+app.config(['$stateProvider', '$locationProvider', 'securityAuthorizationProvider', '$urlRouterProvider', function ($stateProvider, $locationProvider, securityAuthorizationProvider, $urlRouterProvider) {
   $locationProvider.html5Mode(true);
   $stateProvider
     .state('home', {
-      url: '/home',
-      templateUrl: 'home.tpl.html',
-      resolve: securityAuthorizationProvider.requireAuthenticatedUser
+      url: '/',
+      resolve: app.defaultHome,
+      templateUrl: 'home.tpl.html'
     })
-    $urlRouterProvider
-      .otherwise('/register');
-}])
+    .state('404', {
+      url: '/404',
+      templateUrl: '404.tpl.html'
+    });
+  $urlRouterProvider
+    .otherwise('/404');
+}]);
+
+// redirect authenticated user to home page if accessing a page that is for anonymous users
+app.defaultHome = {
+  authenticated : ['security', '$location', function(security, $location){
+    security.requestCurrentUser().then(function(user){
+      if(!user) $location.path('/register');
+      return true;
+    });
+  }]
+};
 
 // Get the current user when the application starts
 // (in case they are still logged in from a previous session)
-.run(['security', function (security) {
+app.run(['security', function (security) {
   security.requestCurrentUser();
-}])
+}]);
 
-.run(['titleService', function (titleService) {
+app.run(['titleService', function (titleService) {
   // used to set the page title which will be outside of each route controller
   titleService.setPrefix('Angular Neo4j | ' );
-}])
+}]);
 
 // the AppCtrl handles the management of notifications.
 // if there is ever an error there will be a generic error
 // if there is a successful route change then the notifications for that url will be requested
-.controller('AppCtrl', ['$scope', 'i18nNotifications', 'security', '$state', function ($scope, i18nNotifications, security, $state) {
+app.controller('AppCtrl', ['$scope', 'i18nNotifications', function ($scope, i18nNotifications) {
   // handle the notifications for
   $scope.notifications = i18nNotifications;
 
@@ -59,34 +73,29 @@ angular.module('angularNeo4jApp', [
     i18nNotifications.remove(notification);
   };
 
-  // TODO: Do we need an error message? Something went wrong, how to log?
-  // $scope.$on('$stateChangeError', function (event, toState, toParams, fromState, fromParams, error) {
-  //   console.log(event);
-  //   console.log(toState);
-  //   console.log(toParams);
-  //   console.log(fromState);
-  //   console.log(fromParams);
-  //   console.log(error);
-  //   $state.transitionTo(fromState);
-  //   // TODO: need to retry the failed route...
-  //   i18nNotifications.pushForCurrentRoute('generic.routeError', 'error', {}, {rejection: error});
-  // });
-  // $scope.$on('$routeChangeError', function (event, current, previous, rejection) {
-  //   // console.log($route.last)
-  //   // TODO: need to retry the failed route...
-  //   i18nNotifications.pushForCurrentRoute('generic.routeError', 'error', {}, {rejection: rejection});
-  // });
+  // TODO: change the loading from a notification to something else
+  $scope.$on("$stateChangeStart", function () {
+    // i18nNotifications.removeAll();
+    i18nNotifications.pushForCurrentRoute('generic.loading', 'info', {}, {});
+  });
+  $scope.$on("$stateChangeError", function (event, toState, toParams, fromState, fromParams, error) {
+    // $state.transitionTo(fromState.name);
+    i18nNotifications.removeAll();
+    i18nNotifications.pushForCurrentRoute('generic.routeError', 'error', {}, {error: error});
+  });
 
   $scope.$on('$stateChangeSuccess', function(){
+    // remove loading
+    i18nNotifications.remove('generic.loading', 'info');
     // get any messages that have been set for this route
     i18nNotifications.getCurrent();
     // refresh the user - e.g. profile update
     // security.requestCurrentUser();
   });
-}])
+}]);
 
 // the HeaderCtrl keeps track of were the user is and changes the links accordingly
-.controller('HeaderCtrl', ['$scope', '$location', '$route', 'security', 'breadcrumbs', 'notifications', 'httpRequestTracker', function ($scope, $location, $route, security, breadcrumbs, notifications, httpRequestTracker) {
+app.controller('HeaderCtrl', ['$scope', '$location', '$route', 'security', 'breadcrumbs', 'notifications', 'httpRequestTracker', function ($scope, $location, $route, security, breadcrumbs, notifications, httpRequestTracker) {
   $scope.location = $location;
   $scope.breadcrumbs = breadcrumbs;
   $scope.menu = false;
@@ -96,7 +105,7 @@ angular.module('angularNeo4jApp', [
 
   $scope.home = function () {
     if (security.isAuthenticated()) {
-      $location.path('/home');
+      $location.path('/');
     } else {
       $location.path('/register');
     }

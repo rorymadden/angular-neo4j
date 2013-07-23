@@ -11,11 +11,12 @@
   </li>
   <li data-ng-show="isAuthenticated()" class="logout">
       <form class="navbar-form">
-          <button class="btn logout" data-ng-click="logout()">Log out</button>
+          <button class="btn logout" data-ng-click="logout('/register')">Log out</button>
       </form>
   </li>
   <li data-ng-hide="isAuthenticated()" class="login">
       <form class="navbar-form">
+          <button class="btn btn-success" data-ng-click="register()">Register</button>
           <button class="btn login" data-ng-click="login()">Log in</button>
       </form>
   </li>

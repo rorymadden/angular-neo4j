@@ -501,7 +501,7 @@ module.exports = function (grunt) {
     'htmlmin:templates',
     'html2js',
     'concurrent:server',
-    'karma:unit',
+    // 'karma:unit',
     'concurrent:nodemon'
   ]);
 
