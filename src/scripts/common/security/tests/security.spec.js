@@ -79,20 +79,20 @@ describe('security', function() {
     });
 
     it('redirects to / by default', function() {
-      inject(function($location) {
-        spyOn($location, 'path');
-        security.logout();
+      inject(function($state) {
+        spyOn($state, 'path');
+        security.logout('register.show');
         $httpBackend.flush();
-        expect($location.path).toHaveBeenCalledWith('/');
+        expect($state.transitionTo).toHaveBeenCalledWith('register.show');
       });
     });
 
     it('redirects to the path specified in the first parameter', function() {
-      inject(function($location) {
-        spyOn($location, 'path');
-        security.logout('/other/path');
+      inject(function($state) {
+        spyOn($state, 'path');
+        security.logout();
         $httpBackend.flush();
-        expect($location.path).toHaveBeenCalledWith('/other/path');
+        expect($state.transitionTo).toHaveBeenCalledWith('home');
       });
     });
   });

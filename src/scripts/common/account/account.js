@@ -30,8 +30,7 @@ accountModule.controller('AccountViewCtrl', ['$scope', '$http', 'i18nNotificatio
     $scope.editable = true;
   };
 
-  $scope.cancelEdit = function(saved){
-    if(!saved) $scope.account = angular.copy($scope.user);
+  $scope.cancelEdit = function(){
     $scope.editable = false;
   };
 
@@ -47,10 +46,10 @@ accountModule.controller('AccountViewCtrl', ['$scope', '$http', 'i18nNotificatio
         $scope.account.password = null;
 
         // force the application to update the current user
-        security.requestCurrentUser(true);
+        security.requestCurrentUser({force: true});
 
         // toggle uneditable again
-        $scope.cancelEdit(true);
+        $scope.editable = false;
       })
       .error(function(data) {
         $scope.account.password = null;

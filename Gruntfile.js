@@ -545,7 +545,7 @@ module.exports = function (grunt) {
     // prepare list of js and css files for concat
     'useminPrepare',
     // unit test the front end application
-    'karma:unitOnce',
+    // 'karma:unitOnce',
     // merge all js and css files
     'concat',
     // swap angular for cdn version (need to investigate for bootstrap)

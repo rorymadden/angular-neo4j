@@ -9,35 +9,35 @@ describe('breadcrumbs', function () {
     };
   };
 
-  var $location, $rootScope, breadcrumbs;
+  var $state, $rootScope, breadcrumbs;
 
   beforeEach(module('services.breadcrumbs'));
   beforeEach(inject(function($injector) {
     breadcrumbs = $injector.get('breadcrumbs');
     $rootScope = $injector.get('$rootScope');
-    $location = $injector.get('$location');
-    spyOn($location, 'path').andCallFake(new LocationMock().path);
+    $state = $injector.get('$state');
+    spyOn($state, 'path').andCallFake(new LocationMock().path);
   }));
 
   it('should have sensible defaults before route navigation', function() {
     expect(breadcrumbs.getAll()).toEqual([]);
-    expect(breadcrumbs.getFirst()).toEqual({});
+    expect(breadcrumbs.getParent()).toEqual({});
   });
 
   it('should not expose breadcrumbs before route change success', function () {
-    $location.path('/some/path');
+    $state.transitionTo('register.forgotPassword');
     expect(breadcrumbs.getAll()).toEqual([]);
-    expect(breadcrumbs.getFirst()).toEqual({});
+    expect(breadcrumbs.getParent()).toEqual({});
   });
 
-  it('should correctly parse $location() after route change success', function () {
-    $location.path('/some/path');
+  it('should correctly parse $state() after route change success', function () {
+    $state.transitionTo('register.forgotPassword');
     $rootScope.$broadcast('$routeChangeSuccess', {});
     expect(breadcrumbs.getAll()).toEqual([
-      { name:'some', path:'/some' },
-      { name:'path', path:'/some/path' }
+      { name:'register', path:'/register' },
+      { name:'path', path:'/register/path' }
     ]);
-    expect(breadcrumbs.getFirst()).toEqual({name:'some', path:'/some'});
+    expect(breadcrumbs.getParent()).toEqual('register');
   });
 
 });

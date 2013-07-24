@@ -7,12 +7,12 @@ angular.module('security.service', [
   'ui.bootstrap.dialog'     // Used to display the login form as a modal dialog.
 ])
 
-.factory('security', ['$http', '$q', '$location', 'securityRetryQueue', '$dialog', '$state', function ($http, $q, $location, queue, $dialog, $state) {
+.factory('security', ['$http', '$q', 'securityRetryQueue', '$dialog', '$state', function ($http, $q, queue, $dialog, $state) {
 
   // Redirect to the given url (defaults to '/')
   function redirect(url) {
-    url = url || '/';
-    $location.path(url);
+    url = url || 'home';
+    $state.transitionTo(url);
   }
 
   // Login form dialog stuff
@@ -48,8 +48,8 @@ angular.module('security.service', [
       // try delayed first
       queue.retryAll();
       // redirect the user from a
-      if($state.current.name.substring(0,8) === 'register'){
-        redirect('/');
+      if($state.current.name.substring(0,8) === 'register' || $state.current.name  === 'login'){
+        redirect('home');
       }
     } else {
       // if there is nothing in the queue then this was a voluntary login - ignore
@@ -57,7 +57,7 @@ angular.module('security.service', [
       if(queue.hasMore()){
         // review usability - might want to redirect to the previous page the user was on instaed of register page
         queue.cancelAll();
-        redirect('/register');
+        redirect('register.show');
       }
     }
   }
@@ -109,8 +109,8 @@ angular.module('security.service', [
     },
 
     // Ask the backend to see if a user is already authenticated - this may be from a previous session.
-    requestCurrentUser: function (force) {
-      if (service.isAuthenticated() && !force) {
+    requestCurrentUser: function (options) {
+      if (service.isAuthenticated() && !(options && options.force)) {
         return $q.when(service.currentUser);
       } else {
         return $http.get('/api/user/current-user').then(function (response) {

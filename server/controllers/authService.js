@@ -322,6 +322,16 @@ exports.validatePasswordReset = function(req, res, next) {
     });
   }
 };
+/**
+ * Respond 200 if reached. If there is an erorr previous middleware will fail
+ * @param  {object}   req
+ * @param  {object}   res
+ * @param  {Function} next
+ * @return {json}        200 always
+ */
+exports.respondValidated = function(req, res) {
+  return res.json(200);
+};
 
 /**
  * Register a new User

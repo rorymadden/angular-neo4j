@@ -4,7 +4,7 @@ angular.module('security.login.form', ['services.localizedMessages', 'ngSanitize
 
 // The LoginFormController provides the behaviour behind a reusable form to allow users to authenticate.
 // This controller and its template (login/form.tpl.html) are used in a modal dialog box by the security service.
-.controller('LoginFormController', ['$scope', '$location', 'security', 'localizedMessages', 'titleService', 'I18N.MESSAGES', function ($scope, $location, security, localizedMessages, titleService, i18nMessages) {
+.controller('LoginFormController', ['$scope', '$state', 'security', 'localizedMessages', 'titleService', 'I18N.MESSAGES', function ($scope, $state, security, localizedMessages, titleService, i18nMessages) {
   titleService.setTitle('Login');
 
   // The model for this form
@@ -24,6 +24,7 @@ angular.module('security.login.form', ['services.localizedMessages', 'ngSanitize
 
   // Attempt to authenticate the user specified in the form's model
   $scope.login = function () {
+    $scope.clicked=true;
     // Clear any previous security errors
     $scope.authError = null;
 
@@ -51,12 +52,12 @@ angular.module('security.login.form', ['services.localizedMessages', 'ngSanitize
 
   $scope.forgotPassword = function () {
     security.cancelLogin();
-    $location.path('/register/forgotPassword');
+    $state.transitionTo('register.forgotPassword');
   };
 
   $scope.resendActivation = function () {
     security.cancelLogin();
-    $location.path('/register/resendActivation');
+    $state.transitionTo('register.resendActivation');
   };
 
   $scope.showResendLink = function() {

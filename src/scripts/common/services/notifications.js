@@ -43,12 +43,10 @@ angular.module('services.notifications', []).factory('notifications', ['$rootSco
 
   notificationsService.remove = function (notification) {
     angular.forEach(notifications, function (notificationsByType) {
-      angular.forEach(notificationsByType, function(note){
-        var idx = note.message.indexOf(notification.message)
-        if (idx > -1) {
-          notificationsByType.splice(idx, 1);
-        }
-      });
+      var idx = notificationsByType.indexOf(notification);
+      if (idx > -1) {
+        notificationsByType.splice(idx, 1);
+      }
     });
   };
 

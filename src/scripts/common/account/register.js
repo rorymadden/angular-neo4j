@@ -87,14 +87,14 @@ registerModule.controller('ForgotPasswordCtrl', ['$scope', '$http', '$state', 'i
   };
 }]);
 
-registerModule.controller('ChangeForgottenPwdCtrl', ['$scope', '$http', '$state', '$stateParams', 'i18nNotifications', 'titleService', 'security', function ($scope, $http, $state, $params, i18nNotifications, titleService, security) {
+registerModule.controller('ChangeForgottenPwdCtrl', ['$scope', '$http', '$state', '$stateParams', 'i18nNotifications', 'titleService', 'security', function ($scope, $http, $state, $stateParams, i18nNotifications, titleService, security) {
   $scope.user = {};
   titleService.setTitle('Reset Password');
 
   $scope.changeForgottenPassword = function(){
     // copy the route params to the user object for posting to the server
-    $scope.user.user_id = $params.user_id;
-    $scope.user.passwordResetKey = $params.passwordResetKey;
+    $scope.user.user_id = $stateParams.user_id;
+    $scope.user.passwordResetKey = $stateParams.passwordResetKey;
 
     $http.post('/api/user/resetPassword', $scope.user)
       .success(function(){
@@ -113,12 +113,14 @@ registerModule.controller('ChangeForgottenPwdCtrl', ['$scope', '$http', '$state'
 
 // redirect authenticated user to home page if accessing a page that is for anonymous users
 registerModule.ensureAnonymous = {
-  authenticated : ['security', '$location', function(security, $location){
-    return security.requestCurrentUser().then(function(user){
-      if(user)  $location.path('/');
-      // if(user) $state.transitionTo('home');
-      return true;
+  authenticated : ['security', '$state', '$q', function(security, $state, $q){
+    var deferred = $q.defer();
+    security.requestCurrentUser().then(function(user){
+      // if(user)  $location.path('/');
+      if(user) $state.transitionTo('home');
+      deferred.resolve();
     });
+    return deferred.promise;
   }]
 };
 
@@ -128,14 +130,12 @@ registerModule.activate = {
     $http.post('/api/user/activate', { activationKey: $stateParams.activationKey})
       .success(function(){
         i18nNotifications.pushForNextRoute('common.register.activationSuccess', 'success', {}, {});
-        // $location.path('/');
         $state.transitionTo('home');
         // return true so that the resolve function will pass
         return true;
       })
       .error(function() {
         i18nNotifications.pushForNextRoute('common.register.activationFail', 'error', {}, {});
-        // $location.path('/register/resendActivation');
         $state.transitionTo('register.resendActivation');
         // return true so that the resolve function will pass
         return true;
@@ -143,7 +143,28 @@ registerModule.activate = {
   }]
 };
 
-accountModule.config(['$stateProvider', 'securityAuthorizationProvider', function ($stateProvider, securityAuthorizationProvider) {
+//copy url parameters to stateParams and redirect to nicer url
+registerModule.validatePasswordReset = {
+  redirect: ['$stateParams', '$state', '$q', 'i18nNotifications', '$http',
+    function($stateParams, $state, $q, i18nNotifications, $http){
+
+    $http.post('/api/user/validatePasswordReset', $stateParams)
+      .success(function(){
+        // success
+        // $state.transitionTo('register.changeForgottenPassword', $stateParams);
+        return true;
+      })
+      .error(function(data){
+        // error
+        $state.transitionTo('register.forgotPassword');
+        i18nNotifications.removeAll();
+        i18nNotifications.pushForNextRoute(data, 'error', {}, {});
+        return true;
+      });
+  }]
+};
+
+registerModule.config(['$stateProvider', function ($stateProvider) {
   $stateProvider
     .state('register', {
       url: '/register',
@@ -170,7 +191,8 @@ accountModule.config(['$stateProvider', 'securityAuthorizationProvider', functio
     .state('register.resetPassword', {
       url: '/resetPassword/:user_id/:passwordResetKey',
       templateUrl: 'scripts/common/account/assets/templates/changeForgottenPassword.tpl.html',
-      controller: 'ChangeForgottenPwdCtrl'
+      controller: 'ChangeForgottenPwdCtrl',
+      resolve: registerModule.validatePasswordReset
     })
     .state('register.activate', {
       url: '/:activationKey',

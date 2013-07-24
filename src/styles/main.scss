@@ -1,5 +1,8 @@
 @import "bootstrap-sass/lib/bootstrap";
 
+$FontAwesomePath: "/bower_components/font-awesome/font";
+@import "font-awesome/scss/font-awesome";
+
 .navbar-fixed-top {
   margin-bottom: 20px;
   position: static;
@@ -54,4 +57,8 @@ h2 {
 .dropdown-submenu:hover > a > [class*=" icon-"],
 .dropdown-submenu:focus > a > [class*=" icon-"] {
   background-image: url("/images/glyphicons-halflings-white.png");
+}
+
+div#spinner {
+  padding: 10px 10px;
 }

@@ -38,6 +38,7 @@ module.exports = function(app, passport) {
   app.post('/api/user/activate', authService.activate, authService.loginUser);
   app.post('/api/user/resendActivation', authService.resendActivationLink);
   app.post('/api/user/forgotPassword', authService.sendPasswordLink);
+  app.post('/api/user/validatePasswordReset', authService.validatePasswordReset, authService.respondValidated);
   app.post('/api/user/resetPassword',
     authService.validatePasswordReset, authService.changeForgottenPassword,
     authService.loginUser);

@@ -43,11 +43,21 @@ app.config(['$stateProvider', '$locationProvider', 'securityAuthorizationProvide
 
 // redirect authenticated user to home page if accessing a page that is for anonymous users
 app.defaultHome = {
-  authenticated : ['security', '$location', function(security, $location){
+  authenticated : ['security', '$state', '$q', function(security, $state, $q){
+    var deferred = $q.defer();
     security.requestCurrentUser().then(function(user){
-      if(!user) $location.path('/register');
-      return true;
+      // if(user)  $location.path('/');
+      if(!user) $state.transitionTo('register.show');
+      deferred.resolve();
     });
+    return deferred.promise;
+    // security.requestCurrentUser().then(function(user){
+    //   if(!user) {
+    //     $state.transitionTo('register.show');
+    //     return true;
+    //   }
+    //   else return true;
+    // });
   }]
 };
 
@@ -62,10 +72,12 @@ app.run(['titleService', function (titleService) {
   titleService.setPrefix('Angular Neo4j | ' );
 }]);
 
+
 // the AppCtrl handles the management of notifications.
 // if there is ever an error there will be a generic error
 // if there is a successful route change then the notifications for that url will be requested
 app.controller('AppCtrl', ['$scope', 'i18nNotifications', function ($scope, i18nNotifications) {
+  $scope.loading = false;
   // handle the notifications for
   $scope.notifications = i18nNotifications;
 
@@ -73,31 +85,29 @@ app.controller('AppCtrl', ['$scope', 'i18nNotifications', function ($scope, i18n
     i18nNotifications.remove(notification);
   };
 
-  // TODO: change the loading from a notification to something else
   $scope.$on("$stateChangeStart", function () {
-    // i18nNotifications.removeAll();
-    i18nNotifications.pushForCurrentRoute('generic.loading', 'info', {}, {});
+    //show spinner
+    $scope.loading = true;
   });
+
   $scope.$on("$stateChangeError", function (event, toState, toParams, fromState, fromParams, error) {
-    // $state.transitionTo(fromState.name);
+    $state.transitionTo(fromState.name, {}, true);
     i18nNotifications.removeAll();
     i18nNotifications.pushForCurrentRoute('generic.routeError', 'error', {}, {error: error});
   });
 
   $scope.$on('$stateChangeSuccess', function(){
-    // remove loading
-    i18nNotifications.remove('generic.loading', 'info');
+    // remove spinner
+    $scope.loading = false;
+
     // get any messages that have been set for this route
     i18nNotifications.getCurrent();
-    // refresh the user - e.g. profile update
-    // security.requestCurrentUser();
   });
 }]);
 
 // the HeaderCtrl keeps track of were the user is and changes the links accordingly
-app.controller('HeaderCtrl', ['$scope', '$location', '$route', 'security', 'breadcrumbs', 'notifications', 'httpRequestTracker', function ($scope, $location, $route, security, breadcrumbs, notifications, httpRequestTracker) {
-  $scope.location = $location;
-  $scope.breadcrumbs = breadcrumbs;
+app.controller('HeaderCtrl', ['$scope', '$state', 'security', 'breadcrumbs', 'notifications', 'httpRequestTracker', function ($scope, $state, security, breadcrumbs, notifications, httpRequestTracker) {
+  $scope.location = $state;
   $scope.menu = false;
 
   $scope.isAuthenticated = security.isAuthenticated;
@@ -105,9 +115,9 @@ app.controller('HeaderCtrl', ['$scope', '$location', '$route', 'security', 'brea
 
   $scope.home = function () {
     if (security.isAuthenticated()) {
-      $location.path('/');
+      $state.transitionTo('home');
     } else {
-      $location.path('/register');
+      $state.transitionTo('register.show');
     }
   };
 
@@ -123,9 +133,13 @@ app.controller('HeaderCtrl', ['$scope', '$location', '$route', 'security', 'brea
   $scope.$watch('$routeChangeStart', function() {
     $scope.closeMenu();
   });
+  // close the menu when a route is changed
+  $scope.$on('$stateChangeSuccess', function() {
+    $scope.breadcrumbs = breadcrumbs.getAll();
+  });
 
   $scope.isNavbarActive = function (navBarPath) {
-    return navBarPath === breadcrumbs.getFirst().name;
+    return navBarPath === breadcrumbs.getParentRoute();
   };
 
   $scope.hasPendingRequests = function () {

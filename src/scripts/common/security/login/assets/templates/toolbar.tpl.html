@@ -1,5 +1,6 @@
 <ul class="nav pull-right">
   <li class="divider-vertical"></li>
+  <li ng-show="loading"><div id="spinner"><i class="icon-spinner icon-spin icon-large icon-light text-center"></i></div></li>
   <li data-ng-show="isAuthenticated()" class="dropdown" data-ng-class="{active:isNavbarActive('account'), open:isAccountOpen}">
       <a href id="accountMenu" role="button" class="dropdown-toggle" data-ng-click="isAccountOpen=!isAccountOpen">{{currentUser.first}} {{currentUser.last}}</a>
       <ul  class="dropdown-menu" role="menu" aria-labelledby="accountMenu">
@@ -11,7 +12,7 @@
   </li>
   <li data-ng-show="isAuthenticated()" class="logout">
       <form class="navbar-form">
-          <button class="btn logout" data-ng-click="logout('/register')">Log out</button>
+          <button class="btn logout" data-ng-click="logout('register.show')">Log out</button>
       </form>
   </li>
   <li data-ng-hide="isAuthenticated()" class="login">
