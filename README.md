@@ -49,8 +49,17 @@ Start your two neo4j instances
 
 Now clone this repo to your workspace and install the dependencies
 
-1. `npm install`
-2. `bower install`
+1. 'cd angular-neo4j'
+2. `npm install`
+3. `bower install`
+
+There is an issue with the 'angular-ui-router' bower install. You need to build the repository:
+
+'cd src/bower_components/angular-ui-router'
+'npm install'
+'grunt'
+'cd ../../../'
+
 
 ### Configuration
 Finally set up the config file. You will need to copy the file server/config/config-sample.js file to server/config/config.js. Fill in all of the details as appropriate.

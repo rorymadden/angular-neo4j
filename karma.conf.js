@@ -12,7 +12,7 @@ files = [
   'src/bower_components/angular-bootstrap/ui-bootstrap.js',
   'src/bower_components/angular-sanitize/angular-sanitize.js',
   'src/bower_components/angular-mocks/angular-mocks.js',
-  'src/bower_components/ui-router/build/angular-ui-router.min.js',
+  'src/bower_components/angular-ui-router/release/angular-ui-router.min.js',
   'src/bower_components/angular-date-dropdowns/directive.js',
   'src/scripts/*.js',
   'src/scripts/**/*.js',

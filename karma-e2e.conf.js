@@ -1,4 +1,6 @@
 // Karma E2E configuration
+//
+//  TODO: works with version 0.3 of grunt-karma but not with newer ones. Wait for protractor
 
 // base path, that will be used to resolve files and exclude
 basePath = '';
