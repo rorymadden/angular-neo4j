@@ -7,6 +7,7 @@ var app = express();
 var RedisStore = require('connect-redis')(express);
 var expressValidator = require('express-validator');
 var passport = require('passport');
+var mailerService = require('./controllers/mailerService');
 
 var env = process.env.NODE_ENV || 'development';
 var config = require('./config/config')[env];
@@ -117,6 +118,12 @@ app.configure(function() {
 // TODO: better error handling and logging
 app.configure('development', function () {
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+});
+
+app.configure('test', function () {
+  app.get('/emails', function(req, res){
+    res.send(JSON.stringify(mailerService.transport.emails));
+  });
 });
 
 app.configure('production', function () {

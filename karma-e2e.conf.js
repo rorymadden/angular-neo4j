@@ -51,9 +51,7 @@ captureTimeout = 5000;
 // if true, it capture browsers, run tests and exit
 singleRun = false;
 
-
 proxies = {
-  '/': 'http://localhost:8080/'
+  '/': 'http://localhost:9000/'
 };
-// URL root prevent conflicts with the site root
 urlRoot = '_karma_';

@@ -1,9 +1,9 @@
 'use strict';
 
 var LIVERELOAD_PORT = 35729;
-var mountFolder = function (connect, dir) {
-  return connect.static(require('path').resolve(dir));
-};
+// var mountFolder = function (connect, dir) {
+//   return connect.static(require('path').resolve(dir));
+// };
 
 module.exports = function (grunt) {
   // load all grunt tasks
@@ -91,31 +91,32 @@ module.exports = function (grunt) {
         ]
       }
     },
-    connect: {
-      options: {
-        port: 9000,
-        // Change this to '0.0.0.0' to access the server from outside.
-        hostname: 'localhost'
-      },
-      test: {
-        options: {
-          middleware: function (connect) {
-            return [
-              mountFolder(connect, '.tmp'),
-              mountFolder(connect, 'test')
-            ];
-          }
-        }
-      }
-    },
-    open: {
-      server: {
-        url: 'http://localhost:<%= connect.options.port %>'
-      },
-      // testE2e: {
-      //   url: 'http://localhost:<%= connect.options.port %>/test/runner.html'
-      // }
-    },
+    // connect: {
+    //   options: {
+    //     port: 9000,
+    //     // Change this to '0.0.0.0' to access the server from outside.
+    //     hostname: 'localhost'
+    //   },
+    //   test: {
+    //     options: {
+    //       port: 9000,
+    //       middleware: function (connect) {
+    //         return [
+    //           // mountFolder(connect, '.tmp'),
+    //           mountFolder(connect, yeomanConfig.app)
+    //         ];
+    //       }
+    //     }
+    //   }
+    // },
+    // open: {
+    //   // server: {
+    //   //   url: 'http://localhost:<%= connect.options.port %>'
+    //   // },
+    //   testE2e: {
+    //     url: 'http://localhost:<%= connect.options.port %>/runner.html'
+    //   }
+    // },
     clean: {
       dist: {
         files: [{
@@ -511,22 +512,19 @@ module.exports = function (grunt) {
     'concurrent:test',
     'htmlmin:templates',
     'html2js',
+    // refactor tests to not drop database every test (very slow)
     'mochaTest',
-    'karma:unitOnce',
-    'connect:test',
-    'karma:e2e'
+    'karma:unitOnce'
+    // e2e tests when protractor is ready
   ]);
 
-  grunt.registerTask('test:e2e', [
-    'env:test',
-    // TODO: Refactor tests so they don't drop the database everytime (slow)
-    'http:dropTest',
-    'concurrent:server'
-    // find a better way to launch karma e2e
-    // 'concurrent:nodemon',
-    // 'watch',
-    // open:TestE2E
-  ]);
+  // Wait for protractor
+  // grunt.registerTask('test:e2e', [
+  //   'env:test',
+  //   'http:dropTest',
+  //   'connect:test',
+  //   'karma:e2e'
+  // ]);
 
   grunt.registerTask('build', [
     'clean:dist',
@@ -545,7 +543,7 @@ module.exports = function (grunt) {
     // prepare list of js and css files for concat
     'useminPrepare',
     // unit test the front end application
-    // 'karma:unitOnce',
+    'karma:unitOnce',
     // merge all js and css files
     'concat',
     // swap angular for cdn version (need to investigate for bootstrap)

@@ -32,7 +32,7 @@ exports.config = {
 
   // Spec patterns are relative to the current working directly when
   // protractor is called.
-  specs: ['test/**/*.js'],
+  specs: ['test/account/register.js'],
 
   // ----- Capabilities to be passed to the webdriver instance.
   // For a full list of available capabilities, see
@@ -48,7 +48,7 @@ exports.config = {
   // ----- Options to be passed to minijasminenode.
   jasmineNodeOpts: {
     // onComplete will be called before the driver quits.
-    specs: ['test/**/*.js']
+    // specs: ['test/**/*.js'],
     onComplete: null,
     isVerbose: false,
     showColors: true,

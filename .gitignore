@@ -4,6 +4,7 @@ dist
 .sass-cache
 src/bower_components
 server/config/config.js
+server/coverage.html
 dump.rdb
 .DS_Store
 *.log

@@ -13,18 +13,6 @@ var app = angular.module('angularNeo4jApp', [
   'templates-main'
 ]);
 
-// .config(['$routeProvider', '$locationProvider', 'securityAuthorizationProvider', function ($routeProvider, $locationProvider, securityAuthorizationProvider) {
-//   $locationProvider.html5Mode(true);
-//   $routeProvider
-//     .when('/home', {
-//       templateUrl: 'home.tpl.html',
-//       resolve: securityAuthorizationProvider.requireAuthenticatedUser
-//     })
-//     .otherwise({
-//       redirectTo: '/register'
-//     });
-// }])
-
 app.config(['$stateProvider', '$locationProvider', 'securityAuthorizationProvider', '$urlRouterProvider', function ($stateProvider, $locationProvider, securityAuthorizationProvider, $urlRouterProvider) {
   $locationProvider.html5Mode(true);
   $stateProvider
@@ -46,7 +34,6 @@ app.defaultHome = {
   authenticated : ['security', '$state', '$q', function(security, $state, $q){
     var deferred = $q.defer();
     security.requestCurrentUser().then(function(user){
-      // if(user)  $location.path('/');
       if(!user) $state.transitionTo('register.show');
       deferred.resolve();
     });
@@ -102,7 +89,6 @@ app.controller('AppCtrl', ['$scope', 'i18nNotifications', '$state', function ($s
 app.controller('HeaderCtrl', ['$scope', '$state', 'security', 'breadcrumbs', 'notifications', 'httpRequestTracker', function ($scope, $state, security, breadcrumbs, notifications, httpRequestTracker) {
   $scope.location = $state;
   $scope.menu = false;
-  // $scope.otherName = [{name: 'register', path: '/register'}, {name: 'register', path: '/register'}];
 
   $scope.isAuthenticated = security.isAuthenticated;
   $scope.isAdmin = security.isAdmin;
