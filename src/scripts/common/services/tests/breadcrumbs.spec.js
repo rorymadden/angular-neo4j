@@ -2,42 +2,43 @@
 
 describe('breadcrumbs', function () {
 
-  var LocationMock = function (initialPath) {
-    var pathStr = initialPath || '';
-    this.path = function (pathArg) {
-      return pathArg ? pathStr = pathArg : pathStr;
-    };
-  };
-
   var $state, $rootScope, breadcrumbs;
 
-  beforeEach(module('services.breadcrumbs'));
+  beforeEach(module('services.breadcrumbs', 'ui.state'));
+
+  // create a mock for home (called during logout)
+  beforeEach(module(function ($stateProvider) {
+    $stateProvider
+      .state('register', { url: "/register" })
+      .state('register.forgotPassword', { url: "/forgotPassword" });
+  }));
+
   beforeEach(inject(function($injector) {
     breadcrumbs = $injector.get('breadcrumbs');
     $rootScope = $injector.get('$rootScope');
     $state = $injector.get('$state');
-    spyOn($state, 'path').andCallFake(new LocationMock().path);
   }));
 
   it('should have sensible defaults before route navigation', function() {
     expect(breadcrumbs.getAll()).toEqual([]);
-    expect(breadcrumbs.getParent()).toEqual({});
+    expect(breadcrumbs.getParentRoute()).toEqual({});
   });
 
   it('should not expose breadcrumbs before route change success', function () {
     $state.transitionTo('register.forgotPassword');
     expect(breadcrumbs.getAll()).toEqual([]);
-    expect(breadcrumbs.getParent()).toEqual({});
+    expect(breadcrumbs.getParentRoute()).toEqual({});
   });
 
   it('should correctly parse $state() after route change success', function () {
     $state.transitionTo('register.forgotPassword');
-    $rootScope.$broadcast('$routeChangeSuccess', {});
+    $rootScope.$digest();
+    expect($state.current.name).toBe('register.forgotPassword');
     expect(breadcrumbs.getAll()).toEqual([
       { name:'register', path:'/register' },
-      { name:'path', path:'/register/path' }
+      { name:'forgotPassword', path:'/register/forgotPassword' }
     ]);
-    expect(breadcrumbs.getParent()).toEqual('register');
+    expect(breadcrumbs.getParentRoute()).toEqual('register');
   });
 
 });

@@ -11,7 +11,7 @@ var app = angular.module('angularNeo4jApp', [
   'services.httpRequestTracker',
   'services.titleService',
   'templates-main'
-])
+]);
 
 // .config(['$routeProvider', '$locationProvider', 'securityAuthorizationProvider', function ($routeProvider, $locationProvider, securityAuthorizationProvider) {
 //   $locationProvider.html5Mode(true);
@@ -51,13 +51,6 @@ app.defaultHome = {
       deferred.resolve();
     });
     return deferred.promise;
-    // security.requestCurrentUser().then(function(user){
-    //   if(!user) {
-    //     $state.transitionTo('register.show');
-    //     return true;
-    //   }
-    //   else return true;
-    // });
   }]
 };
 
@@ -76,7 +69,7 @@ app.run(['titleService', function (titleService) {
 // the AppCtrl handles the management of notifications.
 // if there is ever an error there will be a generic error
 // if there is a successful route change then the notifications for that url will be requested
-app.controller('AppCtrl', ['$scope', 'i18nNotifications', function ($scope, i18nNotifications) {
+app.controller('AppCtrl', ['$scope', 'i18nNotifications', '$state', function ($scope, i18nNotifications, $state) {
   $scope.loading = false;
   // handle the notifications for
   $scope.notifications = i18nNotifications;
@@ -109,6 +102,7 @@ app.controller('AppCtrl', ['$scope', 'i18nNotifications', function ($scope, i18n
 app.controller('HeaderCtrl', ['$scope', '$state', 'security', 'breadcrumbs', 'notifications', 'httpRequestTracker', function ($scope, $state, security, breadcrumbs, notifications, httpRequestTracker) {
   $scope.location = $state;
   $scope.menu = false;
+  // $scope.otherName = [{name: 'register', path: '/register'}, {name: 'register', path: '/register'}];
 
   $scope.isAuthenticated = security.isAuthenticated;
   $scope.isAdmin = security.isAdmin;

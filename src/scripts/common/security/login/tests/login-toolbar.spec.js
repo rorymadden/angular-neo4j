@@ -2,6 +2,15 @@
 
 describe('login-toolbar', function() {
   var $rootScope, scope, toolbar, security;
+  // include the stateProvider
+  beforeEach(module('ui.state'));
+  // create a mock for home (called during logout)
+  beforeEach(module(function ($stateProvider) {
+    $stateProvider
+      .state('home', { url: "/" })
+      .state('register', { url: "/register" })
+      .state('register.show', { url: "/" });
+  }));
   beforeEach(module('scripts/common/security/login/assets/templates/toolbar.tpl.html', 'security'));
   beforeEach(inject(function(_$rootScope_, $compile, _security_) {
     $rootScope = _$rootScope_;
@@ -11,18 +20,6 @@ describe('login-toolbar', function() {
     scope = toolbar.scope();
     angular.element(document.body).append(toolbar);
   }));
-  // beforeEach(inject(function($injector) {
-  //   $rootScope = $injector.get('$rootScope');
-  //   security = $injector.get('security');
-  //   var $compile = $injector.get('$compile');
-  //   toolbar = angular.element('<login-toolbar></login-toolbar>');
-  //   var other = $compile(toolbar)($rootScope);
-  //   $rootScope.$digest();
-  //   scope = other.scope();
-
-  //   // console.log('toolbar '+JSON.stringify(scope));
-  //   angular.element(document.body).append(toolbar);
-  // }));
 
   afterEach(function() {
     toolbar.remove();
@@ -52,46 +49,29 @@ describe('login-toolbar', function() {
   });
 
   it('should display login when user is not authenticated', function() {
-    var buttons = document.getElementsByTagName('button');
-    for(var i=0;i<buttons.length; i++){
-      if(buttons[i].offsetWidth > 0 || buttons[i].offsetHeight > 0) {
-        expect(buttons[i].textContent).toBe('Log in');
-      }
-      else expect(buttons[i].textContent).toBe('Log out');
-    }
-    // expect(toolbar.find('button:visible').text()).toBe('Log in');
-    // expect(toolbar.find('button:hidden').text()).toBe('Log out');
+
+    // because there are two buttons the text gets merged
+    expect(toolbar.find('button:visible').text()).toBe('RegisterLog in');
+    expect(toolbar.find('button:hidden').text()).toBe('Log out');
   });
 
   it('should display logout when user is authenticated', function() {
     security.currentUser = {};
     $rootScope.$digest();
 
-    var buttons = document.getElementsByTagName('button');
-    for(var i=0;i<buttons.length; i++){
-      if(buttons[i].offsetWidth > 0 || buttons[i].offsetHeight > 0) {
-        expect(buttons[i].textContent).toBe('Log out');
-      }
-      else expect(buttons[i].textContent).toBe('Log in');
-    }
-    // expect(toolbar.find('button:visible').text()).toBe('Log out');
-    // expect(toolbar.find('button:hidden').text()).toBe('Log in');
+    expect(toolbar.find('button:visible').text()).toBe('Log out');
+    // because there are two buttons the text gets merged
+    expect(toolbar.find('button:hidden').text()).toBe('RegisterLog in');
   });
 
   it('should call logout when the logout button is clicked', function () {
     spyOn(scope, 'logout');
-    // var buttons = document.getElementsByClassName('logout');
-    // console.log(buttons[0].textContent);
-    // angular.element(buttons[0]).click();
-    // buttons[0].click();
     toolbar.find('button.logout').click();
     expect(scope.logout).toHaveBeenCalled();
   });
 
   it('should call login when the login button is clicked', function () {
     spyOn(scope, 'login');
-    // var buttons = document.getElementsByClassName('login');
-    // buttons[0].click();
     toolbar.find('button.login').click();
     expect(scope.login).toHaveBeenCalled();
   });

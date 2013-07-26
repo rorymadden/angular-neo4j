@@ -41,7 +41,7 @@ describe('notifications', function () {
       var sticky = notifications.pushSticky({msg:'Will stick around after route change'});
       notifications.pushForCurrentRoute({msg:'Will go away after route change'});
       expect(notifications.getCurrent().length).toEqual(2);
-      $scope.$emit('$routeChangeSuccess');
+      $scope.$emit('$stateChangeSuccess');
       expect(notifications.getCurrent().length).toEqual(1);
       expect(notifications.getCurrent()[0]).toBe(sticky);
     });
@@ -54,9 +54,9 @@ describe('notifications', function () {
       notifications.pushSticky({msg:'Will stick around after route change'});
       notifications.pushForNextRoute({msg:'Will not be there till after route change'});
       expect(notifications.getCurrent().length).toEqual(1);
-      $scope.$emit('$routeChangeSuccess');
+      $scope.$emit('$stateChangeSuccess');
       expect(notifications.getCurrent().length).toEqual(2);
-      $scope.$emit('$routeChangeSuccess');
+      $scope.$emit('$stateChangeSuccess');
       expect(notifications.getCurrent().length).toEqual(1);
     });
   });

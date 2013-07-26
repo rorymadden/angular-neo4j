@@ -4,7 +4,14 @@ describe('securityAuthorization', function() {
   var $rootScope, security, securityAuthorization, queue;
   var userResponse, resolved;
 
-  // angular.module('test', []).value('I18N.MESSAGES', {});
+  // include the stateProvider
+  beforeEach(module('ui.state'));
+  // create a mock for home (called during logout)
+  beforeEach(module(function ($stateProvider) {
+    $stateProvider
+      .state('register', { url: "/register" })
+      .state('register.show', { url: "/" });
+  }));
   beforeEach(module('system.messages', 'services.titleService', 'security.authorization', 'scripts/common/security/login/assets/templates/form.tpl.html'));
   // beforeEach(module('security.authorization', 'security'));
   beforeEach(inject(function($injector) {

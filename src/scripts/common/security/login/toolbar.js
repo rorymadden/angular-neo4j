@@ -14,7 +14,7 @@ angular.module('security.login.toolbar', [])
     link: function ($scope) {
       $scope.isAuthenticated = security.isAuthenticated;
       $scope.login = security.showLogin;
-      $scope.register = function() { $state.transitionTo('register.show') };
+      $scope.register = function() { $state.transitionTo('register.show'); };
       $scope.logout = security.logout;
       $scope.$watch(function () {
         return security.currentUser;

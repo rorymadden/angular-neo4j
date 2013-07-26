@@ -3,7 +3,12 @@
 describe('security', function() {
 
   var $rootScope, $http, $httpBackend, userInfo;
-
+  // include the stateProvider
+  beforeEach(module('ui.state'));
+  // create a mock for home (called during logout)
+  beforeEach(module(function ($stateProvider) {
+    $stateProvider.state('home', { url: "/" });
+  }));
   beforeEach(module('security', 'services.titleService', 'scripts/common/security/login/assets/templates/form.tpl.html'));
   beforeEach(module('system.messages'));
 
@@ -30,11 +35,9 @@ describe('security', function() {
   // TODO: Bring back in when modal re-write is complete
   // describe('showLogin', function() {
   //   it('should open the dialog', function() {
-
-  //     debugger;
   //     security.showLogin();
   //     $rootScope.$digest();
-  //     // var div = document.querySelector('.login-form');
+  //     var div = document.querySelector('.login-form');
   //     expect(angular.element('.login-form').length).toBeGreaterThan(0);
   //   });
   // });
@@ -78,18 +81,18 @@ describe('security', function() {
       $httpBackend.flush();
     });
 
-    it('redirects to / by default', function() {
+    it('redirects to the path specified in the first parameter', function() {
       inject(function($state) {
-        spyOn($state, 'path');
+        spyOn($state, 'transitionTo');
         security.logout('register.show');
         $httpBackend.flush();
         expect($state.transitionTo).toHaveBeenCalledWith('register.show');
       });
     });
 
-    it('redirects to the path specified in the first parameter', function() {
+    it('redirects to / by default', function() {
       inject(function($state) {
-        spyOn($state, 'path');
+        spyOn($state, 'transitionTo');
         security.logout();
         $httpBackend.flush();
         expect($state.transitionTo).toHaveBeenCalledWith('home');

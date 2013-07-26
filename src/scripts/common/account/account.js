@@ -2,7 +2,7 @@
 
 var accountModule = angular.module('account', ['account.register', 'ui.bootstrap.dialog', 'rorymadden.date-dropdowns']);
 
-var AccountCtrl = accountModule.controller('AccountCtrl', ['$scope', 'security', function ($scope, security){
+accountModule.controller('AccountCtrl', ['$scope', 'security', function ($scope, security){
   if(!security.currentuser) {
     // the user has navigated striaght to this page - fetch the user
     security.requestCurrentUser().then(function(user){
@@ -41,7 +41,6 @@ accountModule.controller('AccountViewCtrl', ['$scope', '$http', 'i18nNotificatio
   $scope.update = function(){
     $http.put('/api/account', $scope.account)
       .success(function(){
-        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute('common.account.updated', 'success', {}, {});
         $scope.account.password = null;
 
@@ -53,7 +52,6 @@ accountModule.controller('AccountViewCtrl', ['$scope', '$http', 'i18nNotificatio
       })
       .error(function(data) {
         $scope.account.password = null;
-        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute(data, 'error', {}, {});
       });
   };
@@ -92,9 +90,9 @@ var AccountLinkedCtrl = accountModule.controller('AccountLinkedCtrl', ['$scope',
             .success(function(){
               $scope[provider] = null;
             })
-            .error(function() {
-              i18nNotifications.removeAll();
-              i18nNotifications.pushForCurrentRoute('common.account.linkedAccountDeleteError', 'error', {}, {});
+            .error(function(data) {
+
+              i18nNotifications.pushForCurrentRoute(data, 'error', {}, {});
             });
         }
       });
@@ -133,12 +131,10 @@ accountModule.controller('AccountPasswordCtrl', ['$scope', '$http', 'i18nNotific
     $http.put('/api/account/editPassword', $scope.password)
       .success(function() {
         $scope.password = null;
-        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute('common.password.passwordChangeSuccess', 'success', {}, {});
       })
       .error(function(data) {
         $scope.password = null;
-        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute(data, 'error', {}, {});
       });
   };
@@ -147,7 +143,6 @@ accountModule.controller('AccountPasswordCtrl', ['$scope', '$http', 'i18nNotific
     $http.post('/api/user/forgotPassword', {email: email})
       .success(function(){
         $scope.sent = true;
-        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute('common.password.passwordResetLinkSent', 'success', {}, {});
       })
       .error(function(data){
@@ -179,7 +174,6 @@ var AccountGetLoginTokensCtrl = accountModule.controller('AccountGetLoginTokensC
       })
       .error(function(data){
         // $scope.authError = data;
-        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute(data, 'error', {}, {});
       });
   };
@@ -190,7 +184,7 @@ AccountGetLoginTokensCtrl.getLoginTokens = {
   cookies: ['$http', function($http) {
     return $http({
       method: 'GET',
-      url: '/api/account/security/'
+      url: '/api/account/security'
     });
   }]
 };

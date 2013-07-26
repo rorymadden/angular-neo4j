@@ -56,5 +56,9 @@ angular.module('services.notifications', []).factory('notifications', ['$rootSco
     });
   };
 
+  notificationsService.getAll = function () {
+    return [].concat(notifications.STICKY, notifications.ROUTE_CURRENT, notifications.ROUTE_NEXT);
+  };
+
   return notificationsService;
 }]);

@@ -14,14 +14,12 @@ registerModule.controller('RegisterCtrl', ['$scope', '$http', 'i18nNotifications
   $scope.registerUser = function () {
     $http.post('/api/user/register', $scope.user)
       .success(function() {
-        i18nNotifications.removeAll();
         i18nNotifications.pushForNextRoute('common.register.success', 'success', {}, {});
         $scope.user = null;
         $state.transitionTo('login');
       })
       // .error(function(data, status, headers, config) {
       .error(function(data) {
-        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute(data, 'error', {}, {});
       });
   };
@@ -56,12 +54,10 @@ registerModule.controller('ResendActivationCtrl', ['$scope', '$http', 'i18nNotif
     $http.post('/api/user/resendActivation', $scope.user)
       .success(function() {
         $state.transitionTo('login');
-        i18nNotifications.removeAll();
         i18nNotifications.pushForNextRoute('common.register.activationKeyResent', 'success', {}, {});
         $scope.user = null;
       })
       .error(function(data) {
-        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute(data, 'error', {}, {});
       });
   };
@@ -74,14 +70,12 @@ registerModule.controller('ForgotPasswordCtrl', ['$scope', '$http', '$state', 'i
   $scope.forgotPassword = function(){
     $http.post('/api/user/forgotPassword', $scope.user)
       .success(function(){
-        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute('common.password.passwordResetLinkSent', 'success', {}, {});
         $scope.user = null;
       })
       .error(function(data){
         $scope.user = null;
         $state.transitionTo('register.show');
-        i18nNotifications.removeAll();
         i18nNotifications.pushForNextRoute(data, 'error', {}, {});
       });
   };
@@ -101,11 +95,9 @@ registerModule.controller('ChangeForgottenPwdCtrl', ['$scope', '$http', '$state'
         $state.transitionTo('home');
         // force new current user in case of setting a password for already logged in user (e.g. registered from facebook)
         security.requestCurrentUser(true);
-        i18nNotifications.removeAll();
         i18nNotifications.pushForNextRoute('common.password.passwordChangeSuccess', 'success', {}, {});
       })
       .error(function(data){
-        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute(data, 'error', {}, {});
       });
   };
@@ -157,7 +149,6 @@ registerModule.validatePasswordReset = {
       .error(function(data){
         // error
         $state.transitionTo('register.forgotPassword');
-        i18nNotifications.removeAll();
         i18nNotifications.pushForNextRoute(data, 'error', {}, {});
         return true;
       });
