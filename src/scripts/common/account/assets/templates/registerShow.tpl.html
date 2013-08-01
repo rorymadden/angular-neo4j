@@ -1,33 +1,29 @@
 <div>
-  <form class="well" name="RegisterForm" novalidate>
+  <form class="well form-inline" name="RegisterForm" novalidate>
     <h2>Sign Up</h2>
     <!-- <div class="alert alert-error" data-ng-show="authError">
       <div data-ng-bind-html-unsafe="authError"></div>
     </div> -->
-
-    <input class="input-small" name="first" data-ng-model='user.first' type='text' required placeholder="First Name">
-    &nbsp; &nbsp;
-    <input class="input-small" name="last" data-ng-model='user.last' type='text' required placeholder="Last Name">
-
-    <input class="input-large" name="email" data-ng-model='user.email' type='email' required placeholder="Email Address">
-    <span class="help-block" data-ng-show="RegisterForm.email.$invalid && RegisterForm.email.$dirty"><small>Please enter a valid email.</small></span>
-
-    <input class="input-large" name="password" data-ng-model='user.password' type='password' data-ng-minlength="6" required placeholder="Enter a password">
-    <span class="help-block" data-ng-show="RegisterForm.password.$invalid && RegisterForm.password.$dirty"><small>Password must be a minimum of 6 characters.</small></span>
-
-    <select data-ng-model="user.gender" class="input-large" name="gender">
-      <option value="">-- Please Select --</option>
-      <option ng-repeat="gender in genders" value="{{gender.value}}">{{gender.name}}</option>
-￼￼￼￼￼￼￼￼</select>
-    <!-- <span class="help-block" data-ng-show="RegisterForm.gender.$error.required && RegisterForm.gender.$dirty">Please select a gender.</span> -->
-
-    <!-- <label class="radio inline"><input type="radio" ng-model="user.gender" value="male"> Male</label>
-    <label class="radio inline"><input type="radio" ng-model="user.gender" value="female"> Female</label> -->
-
-<!--        <br><br>
-    <label for='dob' class="inline">Date of Birth</label>
-    <input class="input-large" type='text' placeholder='dd/mm/yy' data-ng-model='user.dob' required>
-    <span class="help-block" data-ng-show="RegisterForm.dob.$error.required && RegisterForm.dob.$dirty">Please enter your date of birth.</span> -->
+    <div class='form-group col-6 col-sm-6 col-lg-6 noLeftPadding'>
+      <input class="form-control input-large" name="first" data-ng-model='user.first' type='text' required placeholder="First Name">
+    </div>
+    <div class='form-group col-6 col-sm-6 col-lg-6 noLeftPadding'>
+      <input class="form-control input-large" name="last" data-ng-model='user.last' type='text' required placeholder="Last Name">
+    </div>
+    <div class='form-group'>
+      <input class="form-control input-large" name="email" data-ng-model='user.email' type='email' required placeholder="Email Address">
+      <span class="help-block" data-ng-show="RegisterForm.email.$invalid && RegisterForm.email.$dirty"><small>Please enter a valid email.</small></span>
+    </div>
+    <div class='form-group'>
+      <input class="form-control input-large" name="password" data-ng-model='user.password' type='password' data-ng-minlength="6" required placeholder="Enter a password">
+      <span class="help-block" data-ng-show="RegisterForm.password.$invalid && RegisterForm.password.$dirty"><small>Password must be a minimum of 6 characters.</small></span>
+    </div>
+    <div class='form-group'>
+      <select data-ng-model="user.gender" class="form-control input-large" name="gender">
+        <option value="">-- Please Select --</option>
+        <option ng-repeat="gender in genders" value="{{gender.value}}">{{gender.name}}</option>
+  ￼￼￼￼</select>
+</div>
 
 
     <button class="btn btn-primary btn-large input-xlarge" data-ng-click='registerUser()' data-ng-disabled="RegisterForm.$invalid">Sign up - it's free!</button>

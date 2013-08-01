@@ -1,7 +1,10 @@
-<div class="span3">
+<div class="col-12 col-sm-6 col-lg-4">
   <div ng-show="facebook">
     <h3>Facebook
-      <button class="btn pull-right" type="remove" ng-click="removeLinkedAccount(facebook.provider, facebook._id)"><i class="icon-remove-sign"></i></button>
+      <span class="icon-stack hand" ng-click="removeLinkedAccount(facebook.provider, facebook._id)">
+        <i class="icon-circle icon-stack-base"></i>
+        <i class="icon-remove icon-light"></i>
+      </span>
     </h3>
     <img ng-src={{facebook.picture}}>
   </div>
@@ -14,10 +17,14 @@
   </div>
 </div>
 
-<div class="span3 pull-right">
+<div class="col-12 col-sm-6 col-lg-4 pull-right">
   <div ng-show="google">
     <h3>Google
-      <button class="btn pull-right" type="remove" ng-click="removeLinkedAccount(google.provider, google._id)"><i class="icon-remove-sign"></i></button>
+      <span class="icon-stack hand" ng-click="removeLinkedAccount(google.provider, google._id)">
+        <i class="icon-circle icon-stack-base"></i>
+        <i class="icon-remove icon-light"></i>
+      </span>
+<!--       <button class="btn pull-right" type="remove" ng-click="removeLinkedAccount(google.provider, google._id)"><i class="icon-remove-sign"></i></button> -->
     </h3>
     <img ng-src={{google.picture}}>
   </div>

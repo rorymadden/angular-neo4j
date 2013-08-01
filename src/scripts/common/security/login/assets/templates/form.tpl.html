@@ -6,38 +6,34 @@
 
     <div class="alert alert-error" ng-show="authError" ng-bind-html="authError"></div>
 
-    <div class="control-group">
-      <label class="control-label" for='email'>Email</label>
-      <div class="controls">
-        <input class="span3" ng-model='user.email' type='email' required>
-        <span class="help-block" ng-show="form.$error.email[0].$invalid && form.$error.email[0].$dirty">Please enter a valid email.</span>
-      </div>
+    <div class="form-group">
+      <label for='email'>Email</label>
+      <input type='email' class="form-control input-large" ng-model='user.email' required>
+      <span class="help-block" ng-show="form.$error.email[0].$invalid && form.$error.email[0].$dirty">Please enter a valid email.</span>
     </div>
 
-    <div class="control-group">
-      <label class="control-label" for='password'>Password</label>
-      <div class="controls">
-        <input class="span3" ng-model='user.password' type='password' required>
-        <br>
-        <a  class="hand" data-ng-click="forgotPassword()">Forgot Your Password?</a>
-      </div>
+    <div class="form-group">
+      <label for='password'>Password</label>
+      <input type='password' class="form-control input-large" ng-model='user.password' required>
+      <br>
+      <a  class="hand" data-ng-click="forgotPassword()">Forgot Your Password?</a>
     </div>
 
     <label class="checkbox">Keep me signed in
       <input class="check_boxes optional" ng-model='user.remember_me' type="checkbox" checked='true'>
     </label>
 
-    <button class="btn btn-primary user" ng-click="login()" ng-disabled='form.$invalid'><i class="icon-lock icon-white"></i> Sign in</button>
-    <button class="btn btn-warning cancel" ng-click="cancelLogin()">Cancel</button>
+    <div class="col-8 col-sm-12 col-lg-8">
+      <button class="btn btn-primary user" ng-click="login()" ng-disabled='form.$invalid'><i class="icon-lock icon-white"></i> Sign in</button>
+      <button class="btn btn-warning cancel" ng-click="cancelLogin()">Cancel</button>
+    </div>
+    <div class='col-4 colsm-12 col-lg-4'>
+      <div class>
+      <a href="/auth/facebook"><img src='/images/facebook.png'></a>
+      <a href="/auth/google")><img src='/images/google.png'></a>
   </form>
 </div>
-<div class="span3">
-  <br>
-  <p align="center">Or sign in with<br>
-    <a href="/auth/facebook"><img src='/images/facebook.png'></a>
-    <a href="/auth/google")><img src='/images/google.png'></a>
-  </p>
-
+<div class="col-12">
   <div ng-show="showResendLink()">
     <hr>
     <p>Click here to:</p>

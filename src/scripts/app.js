@@ -87,9 +87,9 @@ app.controller('AppCtrl', ['$scope', 'i18nNotifications', '$state', function ($s
 }]);
 
 // the HeaderCtrl keeps track of were the user is and changes the links accordingly
-app.controller('HeaderCtrl', ['$scope', '$state', 'security', 'breadcrumbs', 'notifications', 'httpRequestTracker', function ($scope, $state, security, breadcrumbs, notifications, httpRequestTracker) {
+app.controller('HeaderCtrl', function ($scope, $state, security, breadcrumbs, notifications, httpRequestTracker) {
   $scope.location = $state;
-  $scope.menu = false;
+  $scope.menuOpen = false;
 
   $scope.isAuthenticated = security.isAuthenticated;
   $scope.isAdmin = security.isAdmin;
@@ -103,15 +103,15 @@ app.controller('HeaderCtrl', ['$scope', '$state', 'security', 'breadcrumbs', 'no
   };
 
   $scope.toggleMenu = function() {
-    $scope.menu = !$scope.menu;
+    $scope.menuOpen = !$scope.menuOpen;
   };
 
   $scope.closeMenu = function() {
-    $scope.menu = false;
+    $scope.menuOpen = false;
   };
 
   // close the menu when a route is changed
-  $scope.$watch('$routeChangeStart', function() {
+  $scope.$watch('$stateChangeStart', function() {
     $scope.closeMenu();
   });
   // close the menu when a route is changed
@@ -126,4 +126,4 @@ app.controller('HeaderCtrl', ['$scope', '$state', 'security', 'breadcrumbs', 'no
   $scope.hasPendingRequests = function () {
     return httpRequestTracker.hasPendingRequests();
   };
-}]);
+});

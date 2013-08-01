@@ -1,4 +1,4 @@
-<ul class="nav pull-right">
+<ul class="nav navbar-nav pull-right">
   <li class="divider-vertical"></li>
   <li ng-show="loading"><div id="spinner"><i class="icon-spinner icon-spin icon-large icon-light text-center"></i></div></li>
   <li data-ng-show="isAuthenticated()" class="dropdown" data-ng-class="{active:isNavbarActive('account'), open:isAccountOpen}">
@@ -7,14 +7,16 @@
         <li><a tabindex="-1" href="/account" data-ng-click="isAccountOpen=false">Profile</a></li>
         <li><a tabindex="-1" href="/account/editPassword" data-ng-click="isAccountOpen=false">Password</a></li>
         <li><a tabindex="-1" href="/account/linkedAccounts" data-ng-click="isAccountOpen=false">Linked Accounts</a></li>
+        <li class="divider"></li>
         <li><a tabindex="-1" href="/account/security" data-ng-click="isAccountOpen=false">Security</a></li>
+        <li><a tabindex="-1" data-ng-click="logout('login')">Log out</a></li>
       </ul>
   </li>
-  <li data-ng-show="isAuthenticated()" class="logout">
+<!--   <li data-ng-show="isAuthenticated()" class="logout">
       <form class="navbar-form">
           <button class="btn logout" data-ng-click="logout('register.show')">Log out</button>
       </form>
-  </li>
+  </li> -->
   <li data-ng-hide="isAuthenticated()" class="login">
       <form class="navbar-form">
           <button class="btn btn-success" data-ng-click="register()">Register</button>

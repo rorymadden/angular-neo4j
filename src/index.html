@@ -29,19 +29,18 @@
     <![endif]-->
 
     <!-- Add your site or application content here -->
-    <div class="navbar navbar-inverse navbar-fixed-top" data-ng-controller="HeaderCtrl">
-      <div class="navbar-inner">
+    <div data-ng-controller="HeaderCtrl">
+      <div class="navbar navbar-inverse navbar-fixed-top">
+        <!-- <div class="navbar-inner"> -->
         <div class="container">
-          <a class="btn btn-navbar">
-          <!-- <a class="btn btn-navbar" data-ng-click="toggleMenu()"> -->
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
-          </a>
-          <a class="brand hand" ng-click="home()">Angular Neo4j</a>
-          <!-- <div class="nav-collapse collapse" ng-show="menu"> -->
-          <div class="nav-collapse collapse">
-            <ul class="nav">
+          </button>
+          <a class="navbar-brand hand" ng-click="home()">Angular Neo4j</a>
+          <div class="nav-collapse collapse navbar-responsive-collapse">
+            <ul class="nav navbar-nav">
               <li ng-class="{active:isNavbarActive('home')}"><a class="hand" ng-click="home()">Home</a></li>
               <li ng-class="{active:isNavbarActive('project')}"><a href="project">Projects</a></li>
               <li ng-class="{active:isNavbarActive('contact')}"><a href="contact">Contact</a></li>
@@ -52,7 +51,7 @@
                   <li><a tabindex="-1" href="#">Another action</a></li>
                   <li><a tabindex="-1" href="#">Something else here</a></li>
                   <li class="divider"></li>
-                  <li class="nav-header">Nav header</li>
+                  <li class="dropdown-header">Nav header</li>
                   <li><a tabindex="-1" href="#">Separated link</a></li>
                   <li><a tabindex="-1" href="#">One more separated link</a></li>
                 </ul>
@@ -60,12 +59,11 @@
             </ul>
             <login-toolbar></login-toolbar>
           </div><!--/.nav-collapse -->
-        </div>
-      </div>
+        </div><!-- /.container -->
+      </div><!-- /.navbar -->
       <div class="container">
         <ul class="breadcrumb">
           <li ng-repeat="breadcrumb in breadcrumbs">
-            <span class="divider">/</span>
             <ng-switch on="$last">
               <span ng-switch-when="true" ng-bind="breadcrumb.name"></span>
               <span ng-switch-default><a href="{{breadcrumb.path}}" ng-bind="breadcrumb.name"></a></span>

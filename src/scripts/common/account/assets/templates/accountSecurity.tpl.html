@@ -20,7 +20,10 @@
         <td>{{cookie.browser}}</td>
         <td>{{cookie.os}}</td>
         <td>{{cookie.created | date:'dd MMMM yyyy hh:mm a'}}</td>
-        <td><button class="btn" type="remove" ng-click="removeToken(cookie._id)"><i class="icon-remove-sign"></i></button></td>
+        <td><span class="icon-stack hand" ng-click="removeToken(cookie._id)">
+        <i class="icon-circle icon-stack-base"></i>
+        <i class="icon-remove icon-light"></i>
+      </span></td>
       </tr>
     </tbody>
   </table>

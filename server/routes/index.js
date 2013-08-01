@@ -24,12 +24,12 @@ module.exports = function(app, passport) {
   app.get('/auth/facebook', passport.authenticate('facebook',
     { scope: 'email, user_birthday' }));
   app.get('/auth/facebook/callback', passport.authenticate('facebook',
-    { failureRedirect: '/login', successRedirect: '/home' }));
+    { failureRedirect: '/login', successRedirect: '/' }));
   app.get('/auth/google', passport.authenticate('google',
     { scope: ['https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/userinfo.email'] }));
   app.get('/auth/google/callback', passport.authenticate('google',
-    { failureRedirect: '/login', successRedirect: '/home' }));
+    { failureRedirect: '/login', successRedirect: '/' }));
 
   /*
    * Auth Routes

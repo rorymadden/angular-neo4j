@@ -29,10 +29,14 @@ angular.module('security.login.form', ['services.localizedMessages', 'ngSanitize
     $scope.authError = null;
 
     // Try to login
-    security.login($scope.user.email, $scope.user.password, $scope.user.remember_me).then(function (loggedIn) {
-      if (!loggedIn) {
+    security.login($scope.user.email, $scope.user.password, $scope.user.remember_me).then(function () {
+
+      if (!security.currentUser) {
         // If we get here then the login failed due to bad credentials
         $scope.authError = localizedMessages.get('common.login.loginFailed');
+      }
+      else {
+        $state.transitionTo('home');
       }
     }, function (x) {
       // If we get here then there was a problem with the login request to the server
@@ -47,7 +51,8 @@ angular.module('security.login.form', ['services.localizedMessages', 'ngSanitize
   };
 
   $scope.cancelLogin = function () {
-    security.cancelLogin();
+    if($state.current.name === 'login') $state.transitionTo('register.show');
+    else security.cancelLogin();
   };
 
   $scope.forgotPassword = function () {
