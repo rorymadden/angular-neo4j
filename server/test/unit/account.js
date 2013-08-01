@@ -38,7 +38,7 @@ var cookie;
 // TESTS
 describe('account pages:', function () {
 
-  beforeEach(function (done) {
+  before(function (done) {
     // Drop the database.
     var query = 'START n=node(*) MATCH n-[r?]-() WHERE ID(n) <> 0 DELETE n,r';
     var params = {};
@@ -96,6 +96,7 @@ describe('account pages:', function () {
           should.not.exist(err);
           should.not.exist(user);
           User.findOne({email: 'newname@test.com'}, function(err, user){
+            fakeUser.email = 'newname@test.com';
             user.first.should.not.equal(fakeUser.first);
             user.first.should.equal('New');
             user.last.should.equal('Name');
@@ -151,6 +152,7 @@ describe('account pages:', function () {
       .end(function(err, res){
         User.findOne({email: fakeUser.email.toLowerCase()}, function(err, user){
           user.checkPassword('Testing', function(err, isMatch){
+            fakeUser.password = 'Testing';
             isMatch.should.be.ok;
             done();
           });
@@ -204,7 +206,7 @@ describe('account pages:', function () {
   });
 
   describe('login tokens: ', function(){
-    beforeEach(function(done){
+    before(function(done){
       // request
       //   .post('/api/user/logout')
       //   .agent(agent2)
@@ -266,7 +268,7 @@ describe('account pages:', function () {
       _json: {
         first_name: 'faceFirst',
         last_name: 'faceLast',
-        email: 'testuser@test.com',
+        email: 'newname@test.com',
         gender: 'male',
         birthday: '06/16/1982',
         id: "12397817"
@@ -276,7 +278,7 @@ describe('account pages:', function () {
       _json: {
         given_name: 'googFirst',
         family_name: 'googLast',
-        email: 'testuser@test.com',
+        email: 'newname@test.com',
         gender: 'female',
         birthday: '1982-06-16',
         id: "23578291208945903329475"
@@ -305,7 +307,7 @@ describe('account pages:', function () {
           .agent(agent)
           .end(function(err, res){
             res.body.should.be.an.array;
-            res.body.should.have.length(1);
+            res.body.should.have.length(2);
             should.exist(res.body[0]);
             //TODO: content test
             done();

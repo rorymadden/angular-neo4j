@@ -3,17 +3,20 @@
 var accountModule = angular.module('account', ['account.register', 'ui.bootstrap.dialog', 'rorymadden.date-dropdowns']);
 
 accountModule.controller('AccountCtrl', ['$scope', 'security', function ($scope, security){
-  if(!security.currentuser) {
-    // the user has navigated striaght to this page - fetch the user
-    security.requestCurrentUser().then(function(user){
-      $scope.user = user;
-      $scope.account = angular.copy($scope.user);
-    });
-  }
-  else {
-    $scope.user = security.currentUser;
-    $scope.account = angular.copy($scope.user);
-  }
+  security.requestCurrentUser().then(function(user){
+    $scope.user = angular.copy(user);
+    $scope.account = angular.copy(user);
+  });
+
+  $scope.$on('UserUpdateCancelled', function(event, account){
+    $scope.account = account;
+  });
+
+  $scope.$watch(function () {
+    return security.currentUser;
+  }, function (currentUser) {
+    $scope.user = currentUser;
+  });
 }]);
 
 accountModule.controller('AccountViewCtrl', ['$scope', '$http', 'i18nNotifications', 'titleService', 'security', function ($scope, $http, i18nNotifications, titleService, security) {
@@ -31,7 +34,9 @@ accountModule.controller('AccountViewCtrl', ['$scope', '$http', 'i18nNotificatio
   };
 
   $scope.cancelEdit = function(){
+    $scope.account = angular.copy($scope.user);
     $scope.editable = false;
+    $scope.$emit('UserUpdateCancelled', $scope.account);
   };
 
   $scope.editCheck = function(){
@@ -41,17 +46,20 @@ accountModule.controller('AccountViewCtrl', ['$scope', '$http', 'i18nNotificatio
   $scope.update = function(){
     $http.put('/api/account', $scope.account)
       .success(function(){
+        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute('common.account.updated', 'success', {}, {});
-        $scope.account.password = null;
+        delete $scope.account.password;
 
-        // force the application to update the current user
-        security.requestCurrentUser({force: true});
+        // set the currentUser to the updated value
+        // triggers watches
+        security.currentUser = angular.copy($scope.account);
 
         // toggle uneditable again
         $scope.editable = false;
       })
       .error(function(data) {
         $scope.account.password = null;
+        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute(data, 'error', {}, {});
       });
   };
@@ -88,10 +96,11 @@ var AccountLinkedCtrl = accountModule.controller('AccountLinkedCtrl', ['$scope',
         if(result === 'ok') {
           $http.delete('/api/account/linkedAccounts/' + id)
             .success(function(){
+              i18nNotifications.removeAll();
               $scope[provider] = null;
             })
             .error(function(data) {
-
+              i18nNotifications.removeAll();
               i18nNotifications.pushForCurrentRoute(data, 'error', {}, {});
             });
         }
@@ -131,10 +140,12 @@ accountModule.controller('AccountPasswordCtrl', ['$scope', '$http', 'i18nNotific
     $http.put('/api/account/editPassword', $scope.password)
       .success(function() {
         $scope.password = null;
+        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute('common.password.passwordChangeSuccess', 'success', {}, {});
       })
       .error(function(data) {
         $scope.password = null;
+        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute(data, 'error', {}, {});
       });
   };
@@ -143,9 +154,11 @@ accountModule.controller('AccountPasswordCtrl', ['$scope', '$http', 'i18nNotific
     $http.post('/api/user/forgotPassword', {email: email})
       .success(function(){
         $scope.sent = true;
+        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute('common.password.passwordResetLinkSent', 'success', {}, {});
       })
       .error(function(data){
+        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute(data, 'error', {}, {});
       });
   };
@@ -160,6 +173,7 @@ var AccountGetLoginTokensCtrl = accountModule.controller('AccountGetLoginTokensC
   $scope.removeToken = function(id){
     $http.delete('/api/account/security/' + id)
       .success(function(){
+        i18nNotifications.removeAll();
         var removeByAttr = function(arr, attr, value){
           var i = arr.length;
           while(i--){
@@ -173,7 +187,7 @@ var AccountGetLoginTokensCtrl = accountModule.controller('AccountGetLoginTokensC
         removeByAttr($scope.cookies, '_id', id);
       })
       .error(function(data){
-        // $scope.authError = data;
+        i18nNotifications.removeAll();
         i18nNotifications.pushForCurrentRoute(data, 'error', {}, {});
       });
   };
@@ -228,3 +242,16 @@ accountModule.config(['$stateProvider', 'securityAuthorizationProvider', functio
     //   controller: 'AccountCtrl'
     // })
 }]);
+
+// accountModule.config(['$routeProvider', function($routeProvider){
+//   $routeProvider
+//     .when('/account', {
+//       templateUrl: 'scripts/common/account/assets/templates/account.tpl.html',
+//       controller: 'AccountViewCtrl'
+//     })
+//     .when('/account/editPassword', {
+//       templateUrl: 'scripts/common/account/assets/templates/accountPassword.tpl.html',
+//             controller: 'AccountPasswordCtrl'
+//     })
+// }]);
+

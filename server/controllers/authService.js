@@ -572,8 +572,32 @@ exports.resendActivationLink = function(req, res) {
  */
 exports.sendPasswordLink = function(req,res) {
   User.findOne({email: req.body.email.toLowerCase()}, function(err, user) {
-    if (err || !user) {
-      return res.json(412, errorMessages.userNotRegistered);
+    if (err) {
+      return res.json(400, err);
+    }
+    // respond with 200 even if the user is not known.
+    // This is to prevent email fishing on the server
+    else if (!user) {
+      // mail service requires options for the email
+      var options = {
+        template: 'unknown_user',
+        from: config.appName + ' <' + config.email.registration + '>',
+        subject: 'Password reset link for ' + config.appName
+      };
+
+      //mail service requires data that can be used in the email template
+      var data = {
+        email: req.body.email.toLowerCase(),
+        appName: config.appName,
+        registerLink: 'http://' + req.headers.host + '/register'
+      };
+
+      // email the user
+      mailerService.sendMail(options, data, function(err, response) {
+        //TODO: what should happen if this email fails???
+      });
+      // dont wait for the mailService to return before responding
+      return res.json(200);
     }
     else {
       //create a new password reset key

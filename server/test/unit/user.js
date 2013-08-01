@@ -14,6 +14,8 @@ var app = require('../../index')
   , neoprene = require('neoprene')
   , fakeUser
   , secondUser
+  , registeredUser
+  , activatedUser
   // , user1 = request.agent();
   ;
 
@@ -28,7 +30,7 @@ neoprene.connect(neo4jURI);
 // TESTS
 describe('routes_user:', function () {
 
-  beforeEach(function (done) {
+  before(function (done) {
     fakeUser = {
       first: 'Fake',
       last: 'User',
@@ -57,7 +59,14 @@ describe('routes_user:', function () {
    * Anonymous User
    */
   describe('anonymous user: ', function () {
+    beforeEach(function(done){
+      var query = 'start n=node(*) match n-[r?]->() where id(n) <> 0 delete r,n';
+      var params = {};
 
+      neoprene.query(query, params, function(err, results) {
+        done();
+      });
+    });
     describe('registration with correct details: ', function() {
       it('should register', function (done) {
         request
@@ -155,8 +164,14 @@ describe('routes_user:', function () {
    */
   describe('registered:',function(){
     var registeredUser = {};
-    beforeEach(function(done){
-      fakeUser.first= 'Fake';
+    before(function(done){
+      fakeUser = {
+        first: 'Fake',
+        last: 'User',
+        email: 'TestUser@test.com',
+        password: 'TestPassword',
+        gender: 'male'
+      };
       request
         .post('/api/user/register')
         .send(fakeUser)
@@ -197,20 +212,6 @@ describe('routes_user:', function () {
           done();
         });
     });
-    it('should activate with valid code', function (done){
-      request
-        .post('/api/user/activate/')
-        .send({activationKey: registeredUser.activationKey})
-        .end(function(err, res){
-          should.not.exist(err);
-          res.should.have.status(200);
-          User.findOne({email: fakeUser.email.toLowerCase() }, function(err, user){
-            user.active.should.be.ok;
-            user.activationKeyUsed.should.be.ok;
-            done();
-          });
-        });
-    });
     it('should fail on invalid code', function (done){
       request
         .post('/api/user/activate/')
@@ -235,6 +236,20 @@ describe('routes_user:', function () {
           res.should.have.status(200);
           //TODO: test email sending?
           done();
+        });
+    });
+    it('should activate with valid code', function (done){
+      request
+        .post('/api/user/activate/')
+        .send({activationKey: registeredUser.activationKey})
+        .end(function(err, res){
+          should.not.exist(err);
+          res.should.have.status(200);
+          User.findOne({email: fakeUser.email.toLowerCase() }, function(err, user){
+            user.active.should.be.ok;
+            user.activationKeyUsed.should.be.ok;
+            done();
+          });
         });
     });
     it('should error if email is not registered', function (done){
@@ -276,7 +291,14 @@ describe('routes_user:', function () {
      */
     describe('activated:', function(){
       var activatedUser = {};
-      beforeEach(function(done){
+      before(function(done){
+        fakeUser = {
+          first: 'Fake',
+          last: 'User',
+          email: 'TestUser@test.com',
+          password: 'TestPassword',
+          gender: 'male'
+        };
         request
           .post('/api/user/activate/')
           .send({activationKey: registeredUser.activationKey})
@@ -288,18 +310,13 @@ describe('routes_user:', function () {
           });
       });
       describe('login:', function(){
-        // var agent1 = request.agent();
-        // var agent2 = request.agent();
-        // it('should display the user login page', function(done){
-        //   request
-        //   .get('/login')
-        //   .expect(200, done);
-        // });
         it('should reject if no email', function (done){
-          delete fakeUser.email;
+          var credentials = {
+            password: 'password'
+          };
           request
             .post('/api/user/login')
-            .send(fakeUser)
+            .send(credentials)
             .end(function(err, res){
               should.not.exist(err);
               res.should.have.status(412);
@@ -307,10 +324,12 @@ describe('routes_user:', function () {
             });
         });
         it('should reject if no password', function (done){
-          delete fakeUser.password;
+          var credentials = {
+            email: 'bademail@test.com'
+          };
           request
             .post('/api/user/login')
-            .send(fakeUser)
+            .send(credentials)
             .end(function(err, res){
               should.not.exist(err);
               res.should.have.status(412);
@@ -318,10 +337,13 @@ describe('routes_user:', function () {
             });
         });
         it('should reject if user doesn\'t exist', function (done){
-          fakeUser.email = 'bademail@test.com';
+          var credentials = {
+            email: 'bademail@test.com',
+            password: 'Testing'
+          };
           request
             .post('/api/user/login')
-            .send(fakeUser)
+            .send(credentials)
             .end(function(err, res){
               should.not.exist(err);
               res.should.have.status(500);
@@ -329,13 +351,16 @@ describe('routes_user:', function () {
             });
         });
         it('should reject if password is wrong', function (done){
-          fakeUser.password = 'bademail@test.com';
+          var credentials = {
+            email: 'bademail@test.com',
+            password: 'bademail@test.com'
+          };
           request
             .post('/api/user/login')
-            .send(fakeUser)
+            .send(credentials)
             .end(function(err, res){
               should.not.exist(err);
-              res.should.have.status(412);
+              res.should.have.status(500);
               done();
             });
         });
@@ -344,7 +369,7 @@ describe('routes_user:', function () {
             .post('/api/user/logout');
             request
               .post('/api/user/login')
-              .send({email: fakeUser.email, password: fakeUser.password})
+              .send({email: 'testuser@test.com', password: 'TestPassword'})
               .end(function(err, res){
                 should.not.exist(err);
                 res.should.have.status(200);
@@ -353,7 +378,7 @@ describe('routes_user:', function () {
                   res.headers['set-cookie'][i].indexOf('logintoken').should.equal(-1);
                 }
                 done();
-            })
+            });
         });
         it('should create cookie if user selects remember_me', function(done){
           // var agent1 = supertest.agent();
@@ -361,7 +386,7 @@ describe('routes_user:', function () {
             .post('/api/user/logout');
             request
               .post('/api/user/login')
-              .send({email: fakeUser.email, password: fakeUser.password, remember_me: true})
+              .send({email: 'testuser@test.com', password: 'TestPassword', remember_me: true})
               .end(function(err, res){
                 should.not.exist(err);
                 res.should.have.status(200);
@@ -387,7 +412,7 @@ describe('routes_user:', function () {
       it('should not allow resending of activation code', function (done){
         request
           .post('/api/user/resendActivation')
-          .send(fakeUser)
+          .send({email: 'testuser@test.com'})
           .end(function(err, res){
             should.not.exist(err);
             res.should.have.status(412);
@@ -411,13 +436,13 @@ describe('routes_user:', function () {
               done();
             });
         });
-        it('should fail request on unknown email', function (done){
+        it('should pass request on unknown email', function (done){
           request
             .post('/api/user/forgotPassword')
             .send({email: 'bademail@test.com'})
             .end(function(err, res){
               should.not.exist(err);
-              res.should.have.status(412);
+              res.should.have.status(200);
               done();
             });
         });
@@ -510,7 +535,7 @@ describe('routes_user:', function () {
             var passwordDetails = {
               user_id: activatedUser._id,
               passwordResetKey: token,
-              password: newPassword,
+              password: 'otherPass',
               passwordConfirm: 'bad password'
             };
             request
@@ -520,7 +545,7 @@ describe('routes_user:', function () {
                 should.not.exist(err);
                 res.should.have.status(412);
                 User.findOne({email: activatedUser.email.toLowerCase() } ,function(err, user){
-                  user.checkPassword(newPassword, function(err, isMatch){
+                  user.checkPassword(passwordDetails.password, function(err, isMatch){
                     isMatch.should.not.be.ok;
                     done();
                   });

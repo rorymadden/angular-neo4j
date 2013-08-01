@@ -66,6 +66,7 @@ app.controller('AppCtrl', ['$scope', 'i18nNotifications', '$state', function ($s
   };
 
   $scope.$on("$stateChangeStart", function () {
+    i18nNotifications.removeAll();
     //show spinner
     $scope.loading = true;
   });
