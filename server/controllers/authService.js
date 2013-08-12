@@ -201,14 +201,20 @@ exports.loginUser = function(req, res, next) {
             userAgent: JSON.stringify(agent),
             autoIndexSeries: uuid()
           });
-          var relationship = {
-            nodeLabel: 'User',
-            indexField: 'email',
-            indexValue: req.body.email.toLowerCase(),
-            type: 'AUTHORISES',
-            direction: 'from'
+          var options = {
+            relationship: {
+              nodeLabel: 'User',
+              indexField: 'email',
+              indexValue: req.body.email.toLowerCase(),
+              type: 'AUTHORISES',
+              direction: 'from'
+            },
+            eventNodes: {
+              user:false,
+              node: false
+            }
           };
-          loginToken.save(relationship, function(err, response){
+          loginToken.create(options, function(err, response){
             if(err) return next(err);
             res.cookie('logintoken', response.node.getCookieValue(),
               { maxAge: 2 * 604800000, signed: true, httpOnly: true });
@@ -258,11 +264,13 @@ exports.loginFromCookie = function(req, res, next) {
         req.login(user, function(err) {
           var agent = useragent.parse(req.headers['user-agent']);
           //Update Token
-          token.ip = req.ip;
-          token.browser = agent.Browser;
-          token.os = agent.OS;
-          token.userAgent = JSON.stringify(agent);
-          token.save(function(){
+          var updates = {
+            ip: req.ip,
+            browser: agent.Browser,
+            os: agent.OS,
+            useragent: JSON.stringify(agent)
+          };
+          token.update(updates, {eventNodes: { node: false, user:false }}, function(){
             res.cookie('logintoken', token.cookieValue,
               { maxAge: 2 * 604800000, signed: true, httpOnly: true });
               return next();
@@ -360,7 +368,7 @@ exports.register = function(req, res) {
       if(user && user.active){
         return res.json(412,  errorMessages.userRegisteredAndActive );
       }
-      if(user && !user.active){
+      else if(user && !user.active){
         return res.json(412,  errorMessages.userRegisteredNotActive );
       }
       else {
@@ -369,38 +377,41 @@ exports.register = function(req, res) {
           last: req.body.last,
           email: req.body.email,
           gender: req.body.gender,
-          password: req.body.password,
           // birthday: req.body.birthday,
           activationKey: uuid()
         });
 
-        user.save(function(err, user){
-          if(err) {
-            return res.json(412,  err );
-          }
-          else {
-            // email user
-            var options = {
-              template: 'invite',
-              from: config.appName + ' <' + config.email.registration + '>',
-              subject: 'Thank you for registering for ' + config.appName
-            };
+        user.createHash(req.body.password, function(err, hash){
+          user.hashed_password = hash;
+          if(err) res.json(400, err);
+          user.create(function(err, user){
+            if(err) {
+              return res.json(412,  err );
+            }
+            else {
+              // email user
+              var options = {
+                template: 'invite',
+                from: config.appName + ' <' + config.email.registration + '>',
+                subject: 'Thank you for registering for ' + config.appName
+              };
 
-            var data = {
-              email: user.email,
-              name: user.first,
-              appName: config.appName,
-              activationLink: 'http://' + req.headers.host + '/register/' +
-                user.activationKey
-            };
+              var data = {
+                email: user.email,
+                name: user.first,
+                appName: config.appName,
+                activationLink: 'http://' + req.headers.host + '/register/' +
+                  user.activationKey
+              };
 
-            mailerService.sendMail(options, data, function(err, response) {
-              // TODO: what should happen if this email fails???
-              // should already be logged by mailerService
-            });
-            // do not wait for mail callback to proceed. Can take a few seconds
-            return res.json(200, user);
-          }
+              mailerService.sendMail(options, data, function(err, response) {
+                // TODO: what should happen if this email fails???
+                // should already be logged by mailerService
+              });
+              // do not wait for mail callback to proceed. Can take a few seconds
+              return res.json(200, user);
+            }
+          });
         });
       }
     });
@@ -436,17 +447,18 @@ exports.loginOrCreate = function(provider, profile, callback){
       // manipulate the json returned into the required format
       var oAuthProvider = profile._json;
       oAuthProvider.provider = provider;
-      oAuthProvider.nodeType = 'OAuthProvider';
+      oAuthProvider._nodeType = 'OAuthProvider';
+      oAuthProvider.birthday = birthday;
       // oAuthProvider.id = parseInt(oAuthProvider.id);
 
       // rename facebook and google variables
       // TODO: If you add more providers update these
       // oAuthProvider.profileId = oAuthProvider.id;
       // delete oAuthProvider.id;
-      oAuthProvider.first = oAuthProvider.first_name || oAuthProvider.given_name;
+      oAuthProvider.first = oAuthProvider.first_name || oAuthProvider.given_name || oAuthProvider.first;
       delete oAuthProvider.first_name;
       delete oAuthProvider.given_name;
-      oAuthProvider.last = oAuthProvider.last_name || oAuthProvider.family_name;
+      oAuthProvider.last = oAuthProvider.last_name || oAuthProvider.family_name || oAuthProvider.last;
       delete oAuthProvider.last_name;
       delete oAuthProvider.family_name;
 
@@ -472,14 +484,22 @@ exports.loginOrCreate = function(provider, profile, callback){
             birthday: birthday
           };
           var newUser = new User(user);
-          newUser.save(function(err, user){
+          newUser.create(function(err, user){
             if(err) return callback(err);
             // populate the missing relationship fields
             rel.indexValue = user._id;
 
-            oAuthProvider.save(rel, function(err, oAuthProvider){
+            var options = {
+              relationship: rel,
+              eventNodes: {
+                user:false,
+                node: false
+              }
+            };
+
+            oAuthProvider.create(options, function(err, oAuthProvider){
               if(err) return callback(err);
-              user.emit('activated');
+              user.emit('activated', oAuthProvider);
               return callback(null, user);
             });
           });
@@ -489,14 +509,23 @@ exports.loginOrCreate = function(provider, profile, callback){
           // populate the missing relationship fields
           rel.indexValue = user._id;
 
+          var updates = {};
           if (!user.birthday || (typeof user.birthday !== "number" && user.birthday.slice(0,4) === '0000')) {
-            user.birthday = birthday;
+            updates.birthday = birthday;
           }
-          if (!user.active) { user.active = true; }
-          user.accountDeactivated = false;
+          if (!user.active) { updates.active = true; }
+          updates.accountDeactivated = false;
 
-          oAuthProvider.save(rel, function(err, oAuthProvider){
-            user.save(function(err, user){
+          var options = {
+            relationship: rel,
+            eventNodes: {
+              user:false,
+              node: false
+            }
+          };
+
+          oAuthProvider.create(options, function(err, oAuthProvider){
+            user.update(updates, function(err, user){
               if(err) return callback(err);
               return callback(null, user);
             });
@@ -529,13 +558,6 @@ exports.resendActivationLink = function(req, res) {
       return res.json(412, errorMessages.userRegisteredAndActive);
     }
     else {
-      // if the user has been de-activated but wants to re-activate
-      // a new token needs to be generated
-      if (user.accountDeactivated) {
-        user.activationKeyUsed = false;
-        user.activationKey = uuid();
-        user.save();
-      }
       //send email to the user
       var options = {
         template: 'invite',
@@ -554,7 +576,20 @@ exports.resendActivationLink = function(req, res) {
       mailerService.sendMail(options, data, function(err, response) {
         //TODO: what should happen if this email fails???
       });
-      return res.json(200)
+      // if the user has been de-activated but wants to re-activate
+      // a new token needs to be generated
+      if (user.accountDeactivated) {
+        var updates ={};
+        updates.activationKeyUsed = false;
+        updates.activationKey = uuid();
+        user.update(updates, function(err){
+          if(err) return res.json(412, err);
+          else return res.json(200);
+        });
+      }
+      else {
+        return res.json(200);
+      }
     }
   });
 };
@@ -600,13 +635,15 @@ exports.sendPasswordLink = function(req,res) {
       return res.json(200);
     }
     else {
+      var updates = {
+        passwordResetKey: uuid(),
+        passwordResetDate: new Date(),
+        passwordResetUsed: false
+      };
       //create a new password reset key
-      user.passwordResetKey = uuid();
-      user.passwordResetDate = new Date();
-      user.passwordResetUsed = false;
 
       //save the key
-      user.save(function(err) {
+      user.update(updates, function(err) {
         if (err) {
           return res.json(400, errorMessages.failedToSave);
         }
@@ -671,17 +708,23 @@ exports.changeForgottenPassword = function(req, res, next) {
   var user = req.userPass;
   req.userPass = null;
 
-  user.password = req.body.password;
-  user.passwordResetUsed = true;
-  user.save(function(err){
-    if (err) {
-      return res.json(400, err);
-    }
-    else {
-      req.newUser = user;
-      return next();
-    }
+  user.createHash(req.body.password, function(err, hash){
+    if(err) return res.json(400, err);
+    var updates = {
+      hashed_password: hash,
+      passwordResetUsed: true
+    };
+    user.update(updates, function(err){
+      if (err) {
+        return res.json(400, err);
+      }
+      else {
+        req.newUser = user;
+        return next();
+      }
+    });
   });
+
 };
 
 /**

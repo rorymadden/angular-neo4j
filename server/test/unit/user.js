@@ -563,8 +563,11 @@ describe('routes_user:', function () {
             var oldDate = new Date();
             oldDate.setHours(oldDate.getHours() - 1);
             User.findOne({email: fakeUser.email.toLowerCase() }, function(err, user) {
-              user.passwordResetDate = oldDate;
-              user.save(function (err, user){
+              var updates = {
+                passwordResetDate: oldDate,
+                passwordResetUsed: false
+              };
+              user.update(updates, function (err, user){
                 request
                   .post('/api/user/resetPassword')
                   .send(passwordDetails)
@@ -587,8 +590,10 @@ describe('routes_user:', function () {
             var oldDate = new Date();
             oldDate.setHours(oldDate.getHours()-2);
             User.findOne({email: fakeUser.email.toLowerCase() }, function (err, user) {
-              user.passwordResetDate = oldDate;
-              user.save(function (err, user) {
+              var updates = {
+                passwordResetDate: oldDate
+              };
+              user.update(updates, function (err, user) {
                 request
                   .post('/api/user/resetPassword')
                   .send(passwordDetails)

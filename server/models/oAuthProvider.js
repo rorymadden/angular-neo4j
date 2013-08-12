@@ -29,6 +29,6 @@ var OAuthProviderSchema = new Schema({
 
 
 // load the relationship used for this model
-neoprene.model('relationship', 'OAUTHORISES', new Schema());
+// neoprene.model('relationship', 'OAUTHORISES', new Schema());
 
-module.exports = neoprene.model('node', 'OAuthProvider', OAuthProviderSchema);
+module.exports = neoprene.model('OAuthProvider', OAuthProviderSchema);

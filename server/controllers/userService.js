@@ -32,13 +32,15 @@ exports.editAccount = function(req, res) {
         return res.json(412, errorMessages.incorrectPassword);
       }
       else {
-        req.user.first = req.body.first;
-        req.user.last = req.body.last;
-        req.user.email = req.body.email.toLowerCase().trim();
-        req.user.gender = req.body.gender;
-        req.user.birthday = req.body.birthday;
+        var updates = {
+          first: req.body.first,
+          last: req.body.last,
+          email: req.body.email.toLowerCase().trim(),
+          gender: req.body.gender,
+          birthday: req.body.birthday
+        };
 
-        req.user.save(function(err){
+        req.user.update(updates, function(err){
           if(err) { return res.json(412, err); }
           return res.json(200);
         });
@@ -59,7 +61,7 @@ exports.editAccount = function(req, res) {
  *                               New Password and confirmation do not match
  *                          200: Password Changed.
  */
-exports.changePassword = function(req, res, next) {
+exports.changePassword = function(req, res) {
 
   // validate inputs
   req.assert('newPassword', errorMessages.invalidPassword).len(6, 128);
@@ -79,10 +81,15 @@ exports.changePassword = function(req, res, next) {
         return res.json(412, errorMessages.incorrectPassword);
       }
       else {
-        req.user.password = req.body.newPassword;
-        req.user.save(function(err){
-          if (err) { return res.json(400, err); }
-          return res.json(200);
+        req.user.createHash(req.body.newPassword, function(err, hash){
+          if(err) return res.json(400, err);
+          var updates = {
+            hashed_password: hash
+          };
+          req.user.update(updates, function(err, user){
+            if (err) { return res.json(400, err); }
+            return res.json(200);
+          });
         });
       }
     });

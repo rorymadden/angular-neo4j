@@ -2,21 +2,24 @@
   <div class="form-group">
     <label for='first' class="col-lg-2 control-label">First Name</label>
     <div class="col-lg-10">
-      <input class="form-control" type='text' ng-model="account.first" required ng-disabled="!editCheck()">
+      <input name='first' class="form-control" type='text' ng-model="account.first" required ng-disabled="!editCheck()">
+      <span class="help-block" data-ng-show="EditProfile.first.$invalid && EditProfile.first.$dirty">First name is required.</span>
     </div>
   </div>
 
   <div class="form-group">
     <label for='name' class="col-lg-2 control-label">Last Name</label>
     <div class="col-lg-10">
-      <input class="form-control" type='text' ng-model="account.last" required ng-disabled="!editCheck()">
+      <input name='last' class="form-control" type='text' ng-model="account.last" required ng-disabled="!editCheck()">
+      <span class="help-block" data-ng-show="EditProfile.last.$invalid && EditProfile.last.$dirty">Last name is required.</span>
     </div>
   </div>
 
   <div class="form-group">
     <label for='email' class="col-lg-2 control-label">Email</label>
     <div class="col-lg-10">
-      <input class="form-control" type='text' ng-model="account.email" required ng-disabled="!editCheck()">
+      <input name='email' class="form-control" type='email' ng-model="account.email" required ng-disabled="!editCheck()">
+      <span class="help-block" data-ng-show="EditProfile.email.$invalid && EditProfile.email.$dirty">Email is required.</span>
     </div>
   </div>
 
@@ -24,18 +27,19 @@
   <div class="form-group">
     <label for='gender' class="col-lg-2 control-label">Gender</label>
     <div class="col-lg-10">
-      <select data-ng-model="account.gender" class="form-control" ng-disabled="!editCheck()">
+      <select name='gender' data-ng-model="account.gender" class="form-control" ng-disabled="!editCheck()" required>
         <option value="">-- Please Select --</option>
         <option ng-repeat="gender in genders" value="{{gender.value}}" ng-selected="gender.value == account.gender">{{gender.name}}</option>
 ￼￼￼￼￼￼￼￼</select>
-      <span class="help-block" data-ng-show="EditProfile.gender.$error.required && EditProfile.gender.$dirty">Please select a gender.</span>
+      <span class="help-block" data-ng-show="EditProfile.gender.$invalid && EditProfile.gender.$dirty">Please select a gender.</span>
     </div>
   </div>
 
   <div class="form-group">
     <label for='birthday' class="col-lg-2 control-label">Birthday</label>
     <div class="col-lg-10">
-      <input rsmDateDropdowns ng-model="account.birthday" ng-disabled="!editCheck()">
+      <input name='birthday' rsmDateDropdowns ng-model="account.birthday" ng-disabled="!editCheck()">
+      <span class="col-lg-10 help-block noLeftPadding" data-ng-show="EditProfile.birthday.$error.rsmdatedropdowns">All date fields must be entered.</span>
     </div>
   </div>
 

@@ -32,7 +32,7 @@ LoginTokenSchema
   });
 
 
-LoginTokenSchema.pre('save', function(next) {
+LoginTokenSchema.pre('create', function(next) {
   // Automatically create the token
   this.token = uuid();
   this.created = new Date();
@@ -70,7 +70,7 @@ LoginTokenSchema.statics.removeTokenSeries = function(autoIndexSeries, callback)
 };
 
 // load the relationship used for this model
-neoprene.model('relationship', 'AUTHORISES', new Schema());
+// neoprene.model('relationship', 'AUTHORISES', new Schema());
 
-module.exports = neoprene.model('node', 'LoginToken', LoginTokenSchema);
+module.exports = neoprene.model('LoginToken', LoginTokenSchema);
 

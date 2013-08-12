@@ -229,7 +229,7 @@ describe('account pages:', function () {
           should.exist(res.body[0]);
           //TODO: maybe a content test
           res.body[0].ip.should.equal("127.0.0.1")
-          res.body[0].nodeType.should.equal("LoginToken")
+          res.body[0]._nodeType.should.equal("LoginToken")
           done();
         });
     });

@@ -1,3 +1,5 @@
+'use strict';
+
 var neoprene = require('neoprene');
 var bcrypt = require('bcrypt');
 var Schema = neoprene.Schema;
@@ -55,19 +57,19 @@ UserSchema.methods.toJSON = function() {
 
 // add some easy access virtuals
 UserSchema
-   .virtual('name')
-   .get(function () {
-     return this.first +" "+this.last;
-   });
+  .virtual('name')
+  .get(function () {
+    return this.first +" "+this.last;
+  });
 
 UserSchema
-   .virtual('password')
-   .get(function () {
-     return this.hashed_password;
-   })
-   .set(function (value) {
-     this._password = value;
-   });
+  .virtual('password')
+  .get(function () {
+    return this.hashed_password;
+  })
+  .set(function(value) {
+    this._doc.hashed_password = value;
+  });
 
 UserSchema
   .virtual('isLocked')
@@ -80,6 +82,19 @@ UserSchema
 /**
  * Instance Methods
  */
+
+UserSchema.methods.createHash = function(password, callback){
+  bcrypt.genSalt(10, function(err, salt) {
+    if (err) { return callback(err); }
+    bcrypt.hash(password, salt, function(err, hash) {
+      if (err) { return callback(err); }
+      // this.hashed_password = hash;
+      // console.log(this._doc)
+      return callback(null, hash);
+    });
+  });
+};
+
 UserSchema.methods.checkPassword = function (password, callback) {
   bcrypt.compare(password, this.hashed_password, function(err, isMatch){
     if (err) { return callback(err); }
@@ -108,26 +123,27 @@ UserSchema.methods.incLoginAttempts = function(callback) {
 /**
  * Pre Validate
  */
-UserSchema.pre('validate', function (next) {
-  var user = this;
+// UserSchema.pre('validate', function (next) {
+//   var user = this;
 
-  //Hash Password
-  // only hash the password if it has been set
-  if (!user._password) {
-    next();
-    return;
-  }
-  // Encrypt the password with bcrypt
-  // Encrypting here, rather than earlier in case other validation fails
-  bcrypt.genSalt(10, function(err, salt) {
-    if (err) { return next(err); }
-    bcrypt.hash(user._password, salt, function(err, hash) {
-      if (err) { return next(err); }
-      user.hashed_password = hash;
-      next();
-    });
-  });
-});
+//   //Hash Password
+//   // only hash the password if it has been set
+//   if (!user._password) {
+//     next();
+//     return;
+//   }
+//   // Encrypt the password with bcrypt
+//   // Encrypting here, rather than earlier in case other validation fails
+//   bcrypt.genSalt(10, function(err, salt) {
+//     if (err) { return next(err); }
+//     bcrypt.hash(user._password, salt, function(err, hash) {
+//       if (err) { return next(err); }
+//       user.hashed_password = hash;
+//       user._password = null;
+//       next();
+//     });
+//   });
+// });
 
 
-module.exports = neoprene.model('node', 'User', UserSchema);
+module.exports = neoprene.model('User', UserSchema);

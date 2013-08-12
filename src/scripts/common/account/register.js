@@ -122,7 +122,9 @@ registerModule.activate = {
     $http.post('/api/user/activate', { activationKey: $stateParams.activationKey})
       .success(function(){
         i18nNotifications.pushForNextRoute('common.register.activationSuccess', 'success', {}, {});
+        // need to trigger the currentUser call to log in user.
         $state.transitionTo('home');
+
         // return true so that the resolve function will pass
         return true;
       })
