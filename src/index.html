@@ -115,6 +115,12 @@
     <script src="scripts/common/services/titleService.js"></script>
     <script src="scripts/common/account/account.js"></script>
     <script src="scripts/common/account/register.js"></script>
+    <script>
+    // fix for facebook issue
+    if (window.location.hash && window.location.hash === "#_=_") {
+      window.location.hash = "";
+    }
+    </script>
     <!-- endbuild -->
 
 <!--     build:js scripts/plugins.js

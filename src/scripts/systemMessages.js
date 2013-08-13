@@ -172,6 +172,10 @@ angular.module('system.messages', [])
     code: 20620,
     message: 'Error retrieving linked accounts. Please try again.'
   },
+  'common.account.facebookSuccess': {
+    code: 20625,
+    message: 'Your facebook account has been successfully linked.'
+  },
   'common.account.confirmLinkedDelete': {
     code: 20630,
     message: 'Are you sure you want to remove the linked account?'

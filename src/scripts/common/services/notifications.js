@@ -13,6 +13,7 @@ angular.module('services.notifications', []).factory('notifications', ['$rootSco
     if (!angular.isObject(notificationObj)) {
       throw new Error('Only object can be added to the notification service');
     }
+    console.log(notificationObj)
     notificationsArray.push(notificationObj);
     return notificationObj;
   };
@@ -51,6 +52,7 @@ angular.module('services.notifications', []).factory('notifications', ['$rootSco
   };
 
   notificationsService.removeAll = function () {
+    // console.log('called')
     angular.forEach(notifications, function (notificationsByType) {
       notificationsByType.length = 0;
     });

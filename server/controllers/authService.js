@@ -93,8 +93,14 @@ exports.activate = function(req, res, next) {
           activationKeyUsed: true,
           accountDeactivated: false
         };
+        var options = {
+          eventNodes : {
+            node:false,
+            user:false
+          }
+        };
 
-        user.update(updates, function(err) {
+        user.update(updates, null, options, function(err) {
           if(err) {
             return res.json(412, errorMessages.failedToSave);
           }
@@ -270,7 +276,7 @@ exports.loginFromCookie = function(req, res, next) {
             os: agent.OS,
             useragent: JSON.stringify(agent)
           };
-          token.update(updates, {eventNodes: { node: false, user:false }}, function(){
+          token.update(updates, null, {eventNodes: { node: false, user:false }}, function(){
             res.cookie('logintoken', token.cookieValue,
               { maxAge: 2 * 604800000, signed: true, httpOnly: true });
               return next();
@@ -525,7 +531,8 @@ exports.loginOrCreate = function(provider, profile, callback){
           };
 
           oAuthProvider.create(options, function(err, oAuthProvider){
-            user.update(updates, function(err, user){
+            delete options.relationship;
+            user.update(updates, null, options, function(err, user){
               if(err) return callback(err);
               return callback(null, user);
             });

@@ -14,9 +14,9 @@ registerModule.controller('RegisterCtrl', ['$scope', '$http', 'i18nNotifications
   $scope.registerUser = function () {
     $http.post('/api/user/register', $scope.user)
       .success(function() {
+        $state.transitionTo('login');
         i18nNotifications.pushForNextRoute('common.register.success', 'success', {}, {});
         $scope.user = null;
-        $state.transitionTo('login');
       })
       // .error(function(data, status, headers, config) {
       .error(function(data) {
@@ -154,6 +154,15 @@ registerModule.validatePasswordReset = {
         i18nNotifications.pushForNextRoute(data, 'error', {}, {});
         return true;
       });
+  }]
+};
+
+registerModule.home = {
+  redirect: ['$state', 'i18nNotifications', function($state, i18nNotifications){
+    console.log('called')
+    $state.transitionTo('home');
+    i18nNotifications.pushForNextRoute('common.account.facebookSuccess', 'success', {}, {});
+    return true;
   }]
 };
 
