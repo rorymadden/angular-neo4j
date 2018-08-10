@@ -22,11 +22,11 @@
     "passport-facebook": "0.1.x",
     "bcrypt": ">0.5.x",
     "nodemailer": "0.3.x",
-    "validator": "0.4.x",
+    "validator": " ~> 2.0.0",
     "email-templates": "0.0.x",
     "uuid-v4": "0.0.x",
     "express-useragent": "0.0.x",
-    "superagent": "~0.14.0"
+    "superagent": "~> 3.7.0"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
